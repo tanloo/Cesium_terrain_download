@@ -1,0 +1,19 @@
+#cesiumContainer,
+html,
+body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+#btnGroup{
+    z-index:999;
+    position: fixed;
+    right: 120px;
+}
+#drawRectBtn{
+    margin: 2.5px;
+}
+#clearBtn{
+    margin: 2.5px;
+}
