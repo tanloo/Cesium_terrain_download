@@ -1,6 +1,7 @@
 import Cesium from "cesium";
 import GlobeTooltip from "./GlobeTooltip";
 import GridUtils from "./GridUtils";
+import axios from 'axios';
 
 var GlobeRectangleDrawer = function () {
     this.init.apply(this, arguments);
@@ -28,6 +29,7 @@ GlobeRectangleDrawer.prototype = {
     extrudedHeight: 0,
     toolBarIndex: null,
     layerId: "globeEntityDrawerLayer",
+    codes: [],
     init: function (viewer) {
         var _this = this;
         _this.viewer = viewer;
@@ -38,7 +40,7 @@ GlobeRectangleDrawer.prototype = {
         _this.ellipsoid = viewer.scene.globe.ellipsoid;
         _this.tooltip = new GlobeTooltip(viewer.container);
         _this.gridUtils = new GridUtils();
-        _this._computeGrid(Cesium.Cartesian3.fromDegrees(0, 45), Cesium.Cartesian3.fromDegrees(180, 0));
+        // _this._computeGrid(Cesium.Cartesian3.fromDegrees(0, 45), Cesium.Cartesian3.fromDegrees(180, 0));
     },
     clear: function () {
         var _this = this;
@@ -217,7 +219,7 @@ GlobeRectangleDrawer.prototype = {
     _computeGrid: function (point_1, point_2) {
         let _this = this;
 
-        let level = 4;
+        let level = 6;
         let p1 = point_1;
         let p2 = point_2;
         let p1_cartographic = _this.ellipsoid.cartesianToCartographic(p1);
@@ -245,12 +247,12 @@ GlobeRectangleDrawer.prototype = {
         let L1 = _this.gridUtils.SC2L(p1_latitude, level);
         let L2 = _this.gridUtils.SC2L(p2_latitude, level);
         let n = L1;
-        console.log("原纬域 L1:" + L1 + ",L2:" + L2);
+        //console.log("原纬域 L1:" + L1 + ",L2:" + L2);
         //纬域值反序转换
         n = level + 1 + 1 - n;
         L1 = level + 1 + 1 - L1;
         L2 = level + 1 + 1 - L2;
-        console.log("转换后纬域 L1:" + L1 + ",L2:" + L2);
+        //console.log("转换后纬域 L1:" + L1 + ",L2:" + L2);
         //判断两点是否在同一纬域
         if (L1 === L2) {
             _this._createGridFromL([p1, p2], n);
@@ -296,7 +298,7 @@ GlobeRectangleDrawer.prototype = {
         let p2_longitude = Cesium.Math.toDegrees(cartographics[1].longitude);
         let p2_latitude = Cesium.Math.toDegrees(cartographics[1].latitude);
 
-        let n = Math.pow(2, L-1);
+        let n = Math.pow(2, L - 1);
         let ratio = 1 / n;
         let latitude = (p2_latitude - p1_latitude) * ratio;
         let longitude = (p2_longitude - p1_longitude) * ratio;
@@ -310,6 +312,9 @@ GlobeRectangleDrawer.prototype = {
         }
         //console.log([p1_longitude, p1_latitude, p2_longitude, p2_latitude]);
         //console.log([longitude, latitude]);
+        let codes = new Map();
+
+        let count = 0;
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < n; j++) {
                 let degreeArray = [];
@@ -330,14 +335,35 @@ GlobeRectangleDrawer.prototype = {
                     degreeArray.push(p2_longitude - (longitude * (n - 1 - j)));
                     degreeArray.push(p2_latitude - (latitude * (n - 1 - i)));
                 }
-
+                let XYCode = _this.gridUtils.SC2QuadCode(p1_longitude, p1_latitude);
+                /*
+                                if (codes.has(_this.gridUtils.DCSE2SDQGC(degreeArray[0], degreeArray[1], XYCode, 6))) {
+                                    console.log(codes.get(_this.gridUtils.DCSE2SDQGC(degreeArray[0], degreeArray[1], XYCode, 6)));
+                                    console.log(degreeArray[0] + "," + degreeArray[1]);
+                                    count++;
+                                }
+                                codes.set(_this.gridUtils.DCSE2SDQGC(degreeArray[0], degreeArray[1], XYCode, 6), degreeArray[0] + "," + degreeArray[1]);
+                */
+                _this.codes.push(_this.gridUtils.DCSE2SDQGC(degreeArray[0], degreeArray[1], XYCode, 6));
                 _this._addGirdRect(degreeArray, i, j);
             }
         }
+        //console.log("共有：" + codes.size);
+        /* for (let [key, value] of codes.entries()) {
+             console.log(key, value);
+         }*/
+        console.log(_this.codes);
+        _this._getPath();
 
         _this._getPosition();
     },
-    _getLatArrayFromLevel(level) {
+    _getPath:function() {
+        axios.post('/code', this.codes).then(({data}) => {
+            console.log(data);
+        })
+
+    },
+    _getLatArrayFromLevel: function (level) {
         let latArray = [];
         for (let i = level; i > 0; i--) {
             latArray.push(90 - 90 * (Math.pow(1 / 2, i)));
@@ -363,6 +389,26 @@ GlobeRectangleDrawer.prototype = {
             layerId: _this.layerId
         };
         _this.viewer.entities.add(bData);
+
+        let center_cartesian = Cesium.Cartographic.toCartesian(Cesium.Rectangle.center(Cesium.Rectangle.fromCartesianArray(cartesianArray)));
+        let center_cartographic = _this.ellipsoid.cartesianToCartographic(center_cartesian);
+        let longitude = Cesium.Math.toDegrees(center_cartographic.longitude);
+        let latitude = Cesium.Math.toDegrees(center_cartographic.latitude);
+
+        let XYCode = _this.gridUtils.SC2QuadCode(longitude, latitude);
+        let code = _this.gridUtils.DCSE2SDQGC(longitude, latitude, XYCode, 6);
+
+        _this.viewer.entities.add({
+            position: center_cartesian,
+            label: {
+                text: code.toString(),
+                font: '18px Helvetica',
+                fillColor: Cesium.Color.BULE,
+                outlineColor: Cesium.Color.BLACK,
+                outlineWidth: 1,
+                style: Cesium.LabelStyle.FILL_AND_OUTLINE
+            }
+        });
     },
     _getRowDegreeArray: function (point1, point2, ratio) {
         let _this = this;

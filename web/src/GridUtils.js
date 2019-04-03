@@ -55,7 +55,7 @@ GridUtils.prototype = {
         }
         return i;
     },
-    _SC2QuadCode: function (lon, lat) {
+    SC2QuadCode: function (lon, lat) {
         let temp = lon;
         let XYCode;
         if (lon < 0) {

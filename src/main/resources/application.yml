@@ -1,13 +1,15 @@
 spring:
-  datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/react?serverTimezone=GMT%2B8&useSSL=false
-    username: root
-    password: 123456
-    type: com.alibaba.druid.pool.DruidDataSource
   jpa:
+    database: postgresql
     show-sql: true
     hibernate:
       ddl-auto: update
-    database: mysql
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  datasource:
+      url: jdbc:postgresql://localhost:5432/postgres
+      username: postgres
+      password: 123456
+      driver-class-name: org.postgresql.Driver

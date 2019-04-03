@@ -70,7 +70,7 @@ class App extends Component {
     }
 
     query = () => {
-        axios.get('/user').then(({data})=>{
+        axios.get('/code').then(({data})=>{
             this.setState({
                 list:data
             });
