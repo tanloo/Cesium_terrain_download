@@ -4,6 +4,8 @@ let GridUtils = function () {
 GridUtils.prototype = {
     longitude: null,
     latitude: null,
+    GesRadius: 6400000 * 4,
+    Ges90Degree: 90.0,
 
     init: function (degreeArray) {
         let _this = this;
@@ -15,21 +17,32 @@ GridUtils.prototype = {
     },
     SC2L: function (lat, level) {
         let _this = this;
-        let Ges90Degree = 90.0;
         let mask = 1;
         if (lat < 0) {
             lat = -lat;
             //mask = -1;
         }
-        let temp = Ges90Degree - Ges90Degree / _this._Pow2(level);
-        if (lat >= 0 && lat <= Ges90Degree / 2) {
+        let temp = this.Ges90Degree - this.Ges90Degree / _this._Pow2(level);
+        if (lat >= 0 && lat <= this.Ges90Degree / 2) {
             return 1 * mask;
         }
-        if (lat >= temp && Ges90Degree) {
+        if (lat >= temp && this.Ges90Degree) {
             return (level + 1) * mask;
         } else if (lat < temp) {
-            return (_this._DownLog2(Ges90Degree / (Ges90Degree - lat)) + 1) * mask;
+            return (_this._DownLog2(this.Ges90Degree / (this.Ges90Degree - lat)) + 1) * mask;
         }
+    },
+    _SC2B: function (r, level) {
+        let temp = this.GesRadius / this._Pow2(level);
+        if (r > this.GesRadius / 2 && r <= this.GesRadius) {
+            return 1;
+        } else if (r > temp && r <= this.GesRadius / 2) {
+            return 1 + this._DownLog2(this.GesRadius / r);
+        } else if (r <= temp) {
+            return level + 1;
+        }
+        return 0;
+
     },
     _Pow2: function (x) {
         if (x < 0) {
@@ -53,25 +66,24 @@ GridUtils.prototype = {
             yValue = yValue << 1;
             i++;
         }
-        return i;
     },
     SC2QuadCode: function (lon, lat) {
         let temp = lon;
         let XYCode;
         if (lon < 0) {
             while (temp < 0) {
-                temp += 90.0 * 4;
+                temp += this.Ges90Degree * 4;
             }
-            XYCode = temp / 90.0;
-        } else if (lon >= 90.0 * 4) {
-            while (temp > 90.0 * 4) {
-                temp -= 90.0 * 4;
+            XYCode = temp / this.Ges90Degree;
+        } else if (lon >= this.Ges90Degree * 4) {
+            while (temp > this.Ges90Degree * 4) {
+                temp -= this.Ges90Degree * 4;
             }
-            XYCode = temp / 90.0;
+            XYCode = temp / this.Ges90Degree;
         } else {
-            XYCode = lon / 90.0;
+            XYCode = lon / this.Ges90Degree;
         }
-        return lat > 0 ? XYCode : XYCode | 0X4;
+        return Math.floor(lat > 0 ? XYCode : XYCode | 0X4);
 
     },
     _ZFilling: function (order0, order1, sl/*subdivision level*/) {
@@ -99,8 +111,8 @@ GridUtils.prototype = {
         }
         return co;
     },
-    DCSE2SDQGC: function (lon, lat, Qua/*象限码*/, MSL/*剖次*/) {
-        let DZF = this._ZFilling(lon, lat, MSL);
+    DCSE2SDQGC: function (iLon, iLat, Qua/*象限码*/, MSL/*剖次*/) {
+        let DZF = this._ZFilling(iLon, iLat, MSL);
         let c = {
             TF: 0x3,
             QC: Qua,
@@ -111,6 +123,56 @@ GridUtils.prototype = {
         };
         DZF = this._PackageEssgC(c, DZF);
         return DZF;
+    },
+    //层纬域计算格网大小
+    GesCellSize: function (k, j, n) {
+        let gSize = [];
+        gSize[0] = this.Ges90Degree / this._Pow2(n + 2 - k - Math.abs(j));
+        gSize[1] = this.Ges90Degree / this._Pow2(n + 1 - k);
+        gSize[2] = this.GesRadius / this._Pow2(n);
+        return gSize;
+    },
+    SC2NsGes: function (point, level) {
+        let k = this._SC2B(25600000, level);
+        let j = this.SC2L(point[1], level);
+        let dR = this.Ges90Degree / this._Pow2(level+ 1 - k);
+        let dLat = this.Ges90Degree / this._Pow2(level + 1 - k);
+        let dLon = this.Ges90Degree / this._Pow2(level+ 2 - k - Math.abs(j));
+
+        let NsCoord = [];
+        NsCoord[4] = this.SC2QuadCode(point[0],point[1]);
+        NsCoord[3] = level;
+        NsCoord[2] = Math.floor(((this.GesRadius - 25600000) / dR)) + 1;
+        NsCoord[1] = point[1] < 0 ? Math.floor((-(point[1]) / dLat)) + 1 :Math.floor(((point[1]) / dLat))  + 1;
+
+        let temp = point[0];
+        while (temp >= this.Ges90Degree) {
+            temp -= this.Ges90Degree;
+        }
+        while (temp < 0) {
+            temp += this.Ges90Degree;
+        }
+        NsCoord[0] = Math.floor((temp / dLon)) + 1;
+        return NsCoord;
+    },
+    getCodesFromPoints: function (point1, point2, level) {
+        let L = this.SC2L(point1[1], level);
+
+        let cellSize = this.GesCellSize(1, L, level);
+
+        let m1 = Math.ceil((point2[0] - point1[0]) / cellSize[0]);
+        let m2 = Math.floor((point2[1] - point1[1]) / cellSize[1]);
+        m1 = Math.abs(m1);
+        m2 = Math.abs(m2);
+        let JWX = this.SC2NsGes(point1, level);
+        let XYCode = Math.floor(this.SC2QuadCode(point1[0], point1[1]));
+        let codes = [];
+        for (let i = 0; i < m1; i++) {
+            for (let j = 0; j < m2; j++) {
+                codes.push(this.DCSE2SDQGC(JWX[0] + i, JWX[1] + j, XYCode, level));
+            }
+        }
+        return codes;
     }
 };
 

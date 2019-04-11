@@ -40,7 +40,8 @@ GlobeRectangleDrawer.prototype = {
         _this.ellipsoid = viewer.scene.globe.ellipsoid;
         _this.tooltip = new GlobeTooltip(viewer.container);
         _this.gridUtils = new GridUtils();
-        // _this._computeGrid(Cesium.Cartesian3.fromDegrees(0, 45), Cesium.Cartesian3.fromDegrees(180, 0));
+        //_this._computeGrid(Cesium.Cartesian3.fromDegrees(0, 45), Cesium.Cartesian3.fromDegrees(180, 0));
+        //_this._computeGrid(Cesium.Cartesian3.fromDegrees(-91.96530365851015, 25.34859337209848), Cesium.Cartesian3.fromDegrees(-77.6934107113205, 16.69940417685254));
     },
     clear: function () {
         var _this = this;
@@ -196,9 +197,9 @@ GlobeRectangleDrawer.prototype = {
         }
 
     },
+    //判断是否跨子午线
     _divideL: function (p1, p2, p1_longitude, p2_longitude, p1_latitude, p2_latitude) {
         let _this = this;
-        //判断是否跨子午线
         if ((p1_longitude > 0 && p2_longitude < 0) || (p1_longitude < 0 && p2_longitude > 0)) {
             if ((Math.abs(p1_longitude) + Math.abs(p2_longitude) > 180) && ((p1_longitude > 0 && p2_longitude < 0) || (p1_longitude < 0 && p2_longitude > 0))) {
                 _this._computeGrid(p1, Cesium.Cartesian3.fromDegrees(180, p2_latitude));
@@ -228,7 +229,6 @@ GlobeRectangleDrawer.prototype = {
         let p2_cartographic = _this.ellipsoid.cartesianToCartographic(p2);
         let p2_latitude = Cesium.Math.toDegrees(p2_cartographic.latitude);
         let p2_longitude = Cesium.Math.toDegrees(p2_cartographic.longitude);
-
 
         //交换坐标点为p1低纬域值，p2高纬域值
         if ((p2_latitude > p1_latitude && p2_latitude >= 0 && p1_latitude >= 0) || (p2_latitude < p1_latitude && p2_latitude <= 0 && p1_latitude <= 0)) {
@@ -310,11 +310,8 @@ GlobeRectangleDrawer.prototype = {
         if ((Math.abs(p1_longitude) + Math.abs(p2_longitude) > 180) && ((p1_longitude > 0 && p2_longitude < 0) || (p1_longitude < 0 && p2_longitude > 0))) {
             longitude = (180 - Math.abs(p2_longitude) + 180 - Math.abs(p1_longitude)) * ratio;
         }
-        //console.log([p1_longitude, p1_latitude, p2_longitude, p2_latitude]);
+        console.log([p1_longitude, p1_latitude, p2_longitude, p2_latitude]);
         //console.log([longitude, latitude]);
-        let codes = new Map();
-
-        let count = 0;
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < n; j++) {
                 let degreeArray = [];
@@ -335,32 +332,26 @@ GlobeRectangleDrawer.prototype = {
                     degreeArray.push(p2_longitude - (longitude * (n - 1 - j)));
                     degreeArray.push(p2_latitude - (latitude * (n - 1 - i)));
                 }
-                let XYCode = _this.gridUtils.SC2QuadCode(p1_longitude, p1_latitude);
-                /*
-                                if (codes.has(_this.gridUtils.DCSE2SDQGC(degreeArray[0], degreeArray[1], XYCode, 6))) {
-                                    console.log(codes.get(_this.gridUtils.DCSE2SDQGC(degreeArray[0], degreeArray[1], XYCode, 6)));
-                                    console.log(degreeArray[0] + "," + degreeArray[1]);
-                                    count++;
-                                }
-                                codes.set(_this.gridUtils.DCSE2SDQGC(degreeArray[0], degreeArray[1], XYCode, 6), degreeArray[0] + "," + degreeArray[1]);
-                */
-                _this.codes.push(_this.gridUtils.DCSE2SDQGC(degreeArray[0], degreeArray[1], XYCode, 6));
                 _this._addGirdRect(degreeArray, i, j);
             }
         }
-        //console.log("共有：" + codes.size);
-        /* for (let [key, value] of codes.entries()) {
-             console.log(key, value);
-         }*/
+        _this.codes = _this.gridUtils.getCodesFromPoints([p1_longitude, p1_latitude], [p2_longitude, p2_latitude], 6);
+
         console.log(_this.codes);
         _this._getPath();
 
         _this._getPosition();
     },
-    _getPath:function() {
+    _getPath: function () {
         axios.post('/code', this.codes).then(({data}) => {
             console.log(data);
-        })
+
+            let terrainProvider = new Cesium.CesiumTerrainProvider({
+                url: "/terrain_tiles"
+            });
+            this.viewer.terrainProvider = terrainProvider;
+        });
+
 
     },
     _getLatArrayFromLevel: function (level) {
@@ -368,6 +359,7 @@ GlobeRectangleDrawer.prototype = {
         for (let i = level; i > 0; i--) {
             latArray.push(90 - 90 * (Math.pow(1 / 2, i)));
         }
+
         let length = latArray.length;
         for (let i = 0; i < length; i++) {
             latArray.push(-latArray[i]);
@@ -390,25 +382,26 @@ GlobeRectangleDrawer.prototype = {
         };
         _this.viewer.entities.add(bData);
 
-        let center_cartesian = Cesium.Cartographic.toCartesian(Cesium.Rectangle.center(Cesium.Rectangle.fromCartesianArray(cartesianArray)));
-        let center_cartographic = _this.ellipsoid.cartesianToCartographic(center_cartesian);
-        let longitude = Cesium.Math.toDegrees(center_cartographic.longitude);
-        let latitude = Cesium.Math.toDegrees(center_cartographic.latitude);
+        /*  let center_cartesian = Cesium.Cartographic.toCartesian(Cesium.Rectangle.center(Cesium.Rectangle.fromCartesianArray(cartesianArray)));
+          let center_cartographic = _this.ellipsoid.cartesianToCartographic(center_cartesian);
+          let longitude = Cesium.Math.toDegrees(center_cartographic.longitude);
+          let latitude = Cesium.Math.toDegrees(center_cartographic.latitude);
 
-        let XYCode = _this.gridUtils.SC2QuadCode(longitude, latitude);
-        let code = _this.gridUtils.DCSE2SDQGC(longitude, latitude, XYCode, 6);
+          let XYCode = _this.gridUtils.SC2QuadCode(longitude, latitude);
+          let code = _this.gridUtils.DCSE2SDQGC(longitude, latitude, XYCode, 6);
 
-        _this.viewer.entities.add({
-            position: center_cartesian,
-            label: {
-                text: code.toString(),
-                font: '18px Helvetica',
-                fillColor: Cesium.Color.BULE,
-                outlineColor: Cesium.Color.BLACK,
-                outlineWidth: 1,
-                style: Cesium.LabelStyle.FILL_AND_OUTLINE
-            }
-        });
+          _this.viewer.entities.add({
+              position: center_cartesian,
+              label: {
+                  text: code.toString(),
+                  font: '18px Helvetica',
+                  fillColor: Cesium.Color.BULE,
+                  outlineColor: Cesium.Color.BLACK,
+                  outlineWidth: 1,
+                  style: Cesium.LabelStyle.FILL_AND_OUTLINE
+              },
+              layerId: _this.layerId
+          });*/
     },
     _getRowDegreeArray: function (point1, point2, ratio) {
         let _this = this;

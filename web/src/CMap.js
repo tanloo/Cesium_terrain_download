@@ -12,6 +12,7 @@ class Viewer extends React.Component {
     }
 
     componentDidMount() {
+
         let viewer = new Cesium.Viewer('cesiumContainer', {
             animation: false,
             creditsDisplay: false,
@@ -19,7 +20,7 @@ class Viewer extends React.Component {
             fullscreenButton: false,
             sceneModePicker: false,
             navigationHelpButton: false,
-            creditContainer: null
+            creditContainer: null,
         });
         //赤道
         viewer.entities.add({
