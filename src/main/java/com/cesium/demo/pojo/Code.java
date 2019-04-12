@@ -3,14 +3,11 @@ package com.cesium.demo.pojo;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-import javax.persistence.*;
 
 /**
  * @author tanloo
  * on 2019/4/3
  */
-@Table(name = "codes")
-@Entity
 @Setter
 @Getter
 @NoArgsConstructor
@@ -18,8 +15,6 @@ import javax.persistence.*;
 @ToString
 @Accessors(chain = true)
 public class Code {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private double x1;
     private double y1;

@@ -1,4 +1,4 @@
-package com.cesium.demo;
+package com.cesium.demo.config;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class BaseInterceptor implements HandlerInterceptor {
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         return true;
     }
 }

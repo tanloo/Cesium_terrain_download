@@ -343,13 +343,17 @@ GlobeRectangleDrawer.prototype = {
         _this._getPosition();
     },
     _getPath: function () {
-        axios.post('/code', this.codes).then(({data}) => {
+        let _this = this;
+        axios.post('/code', _this.codes).then(({data}) => {
             console.log(data);
-
-            let terrainProvider = new Cesium.CesiumTerrainProvider({
-                url: "/terrain_tiles"
+            Object.keys(data).forEach(function (key) {
+                if (key !== null) {
+                    let terrainProvider = new Cesium.CesiumTerrainProvider({
+                        url: "/terrain_tiles/"+key
+                    });
+                    _this.viewer.terrainProvider = terrainProvider;
+                }
             });
-            this.viewer.terrainProvider = terrainProvider;
         });
 
 
