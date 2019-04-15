@@ -346,14 +346,10 @@ GlobeRectangleDrawer.prototype = {
         let _this = this;
         axios.post('/code', _this.codes).then(({data}) => {
             console.log(data);
-            Object.keys(data).forEach(function (key) {
-                if (key !== null) {
-                    let terrainProvider = new Cesium.CesiumTerrainProvider({
-                        url: "/terrain_tiles/"+key
-                    });
-                    _this.viewer.terrainProvider = terrainProvider;
-                }
+            let terrainProvider = new Cesium.CesiumTerrainProvider({
+                url: "/terrain_tiles"
             });
+            _this.viewer.terrainProvider = terrainProvider;
         });
 
 
