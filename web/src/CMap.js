@@ -12,7 +12,9 @@ class Viewer extends React.Component {
     }
 
     componentDidMount() {
-
+        //默认选择ESRI影像底图
+        let imageryProviders = new Cesium.createDefaultImageryProviderViewModels();
+        let selectedImageryProviderIndex = 6;
         let viewer = new Cesium.Viewer('cesiumContainer', {
             animation: false,
             creditsDisplay: false,
@@ -21,6 +23,8 @@ class Viewer extends React.Component {
             sceneModePicker: false,
             navigationHelpButton: false,
             creditContainer: null,
+            imageryProviderViewModels: imageryProviders,
+            selectedImageryProviderViewModel: imageryProviders[selectedImageryProviderIndex]
         });
         //赤道
         viewer.entities.add({

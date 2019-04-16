@@ -13,7 +13,7 @@ import java.util.zip.ZipInputStream;
 public class UnZipFile {
 
     public static Set<String> unZipFile(Set<String> zipPackages) throws Exception {
-        //String zipPackage = "F:/ASTGTM_N11E076.zip";
+        System.out.println("-----开始提取img文件-------");
         Set<String> imgPaths = new HashSet<>();
         for (String zipPackage : zipPackages) {
             if ("zip".equals(zipPackage.substring(zipPackage.lastIndexOf('.')))) {
