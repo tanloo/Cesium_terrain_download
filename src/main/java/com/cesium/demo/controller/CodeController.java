@@ -2,6 +2,7 @@ package com.cesium.demo.controller;
 
 import com.cesium.demo.mapper.CodeMapper;
 import com.cesium.demo.pojo.Code;
+import com.cesium.demo.pojo.CodeParam;
 import com.cesium.demo.utils.FileOps;
 import com.cesium.demo.utils.ImgOps;
 import com.cesium.demo.utils.UnZipFile;
@@ -32,11 +33,11 @@ public class CodeController {
     }
 
     @PostMapping
-    public Object getCodesInfo(@RequestBody Long[] codes) {
-        Map<Long, Code> map = new HashMap<>(codes.length);
+    public Object getCodesInfo(@RequestBody CodeParam codeParam) {
+        Map<Long, Code> map = new HashMap<>(codeParam.getCodes().length);
         Set<String> zipPaths = new HashSet<>();
 
-        for (Long id : codes) {
+        for (Long id : codeParam.getCodes()) {
             Code code = this.codeMapper.getOne(id);
             if (code != null) {
                 if (new File(code.getPath()).exists()) {
@@ -45,10 +46,17 @@ public class CodeController {
                 }
             }
         }
+        if (zipPaths.size() == 0) {
+            return map;
+        }
         try {
             Set<String> imgPaths = UnZipFile.unZipFile(zipPaths);
-            String imgPath = ImgOps.mergeImg(imgPaths);
-            ImgOps.img2terrain(imgPath);
+            String imgPath = "";
+            if (imgPaths.size() > 1) {
+                imgPath = ImgOps.mergeImg(imgPaths);
+            } else {
+                ImgOps.img2terrain(imgPaths.iterator().next(), codeParam.getTileLevel());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

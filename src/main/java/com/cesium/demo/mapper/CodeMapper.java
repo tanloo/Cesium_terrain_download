@@ -13,6 +13,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CodeMapper {
 
-    @Select("select * from codes where id=#{id}")
+    @Select("select id, x1, y1, x2, y2, px1, py1, px2, py2, trim(path) as path from codes where id=#{id}")
     Code getOne(long id);
 }

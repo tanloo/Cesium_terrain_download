@@ -9,17 +9,17 @@ GlobeTracker.prototype = {
     ctrArr: [],
     rectDrawer: null,
     init: function (viewer) {
-        var _this = this;
+        let _this = this;
         _this.viewer = viewer;
         _this.rectDrawer = new GlobeRectangleDrawer(_this.viewer);
         _this.ctrArr.push(_this.rectDrawer);
 
     },
     clear: function () {
-        var _this = this;
-        for (var i = 0; i < _this.ctrArr.length; i++) {
+        let _this = this;
+        for (let i = 0; i < _this.ctrArr.length; i++) {
             try {
-                var ctr = _this.ctrArr[i];
+                let ctr = _this.ctrArr[i];
                 if (ctr.clear) {
                     ctr.clear();
                 }
@@ -28,14 +28,24 @@ GlobeTracker.prototype = {
             }
         }
     },
-    trackRectangle: function (okHandler, cancelHandler) {
-        var _this = this;
+    trackRectangle: async function (okHandler, cancelHandler) {
+        let _this = this;
         if (_this.rectDrawer == null) {
             _this.rectDrawer = new GlobeRectangleDrawer(_this.viewer);
             _this.ctrArr.push(_this.rectDrawer);
         }
         //_this.clear();
-        _this.rectDrawer.startDrawRectangle(okHandler, cancelHandler);
+        let res = await _this.rectDrawer.startDrawRectangle(okHandler, cancelHandler);
+        return new Promise(resolve => {
+            resolve(res);
+        });
+    },
+    getTile: function (tileLevel) {
+        let _this = this;
+        _this.rectDrawer.getPath(tileLevel);
+    },
+    getImgInfo: function () {
+        return this.rectDrawer.imgInfo;
     },
     CLASS_NAME: "GlobeTracker"
 };

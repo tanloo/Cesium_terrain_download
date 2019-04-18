@@ -1,6 +1,7 @@
 package com.cesium.demo.utils;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.util.ClassUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +16,7 @@ public class ImgOps {
     public static String mergeImg(Set<String> imgPaths) throws Exception {
         String[] str_imgPaths = imgPaths.toArray(new String[imgPaths.size()]);
         System.out.println("有" + str_imgPaths.length + "份数据");
-        URL url = imgPaths.getClass().getResource("/static/gdal_merge.py");
+        URL url = ClassUtils.getDefaultClassLoader().getResource("static/gdal_merge.py");
         String imgMerge_pyPath = new File(url.getPath()).getAbsolutePath();
         String[] temp = {"cmd", "/c", "python", imgMerge_pyPath};
         String[] mergeCommand = ArrayUtils.addAll(temp, str_imgPaths);
@@ -40,16 +41,20 @@ public class ImgOps {
         }
     }
 
-    public static void img2terrain(String imgPath) throws Exception {
-        URL url = imgPath.getClass().getResource("/static/gdal2srtmtiles.py");
+    public static void img2terrain(String imgPath ,Integer tileLevel) throws Exception {
+        URL url = ClassUtils.getDefaultClassLoader().getResource("static/gdal2srtmtiles.py");
         String pyPath = new File(url.getPath()).getAbsolutePath();
-        url = imgPath.getClass().getResource("/static");
+        url = ClassUtils.getDefaultClassLoader().getResource("static");
         File staticFile = new File(url.getFile());
         String tilePath = "";
         for (File f : staticFile.listFiles()) {
             if ("terrain_tiles".equals(f.getName())) {
                 if (f.isDirectory()) {
                     tilePath = f.getAbsolutePath();
+                    File tileFile = new File(tilePath);
+                    if (tileFile.listFiles() != null) {
+                        FileOps.deleteFiles(tilePath);
+                    }
                     break;
                 }
             }
@@ -63,12 +68,10 @@ public class ImgOps {
             tilePath = tempFile.getAbsolutePath();
         }
 
-        File tileFile = new File(tilePath);
-        if (tileFile.listFiles() != null) {
-            FileOps.deleteFiles(tilePath);
-        }
         System.out.println(imgPath);
-        String[] tilesCommand = {"cmd", "/c", "python", pyPath, pyPath, "--cesium", "--resume", "-z", "0-8", "-p", "geodetic", imgPath, tilePath};
+        String str_tileLevel = "0-" + String.valueOf(tileLevel);
+        System.out.println(str_tileLevel);
+        String[] tilesCommand = {"cmd", "/c", "python", pyPath, pyPath, "--cesium", "--resume", "-z", str_tileLevel, "-p", "geodetic", imgPath, tilePath};
         System.out.println("-------开始执行转换terrain-------");
         Process pr2 = Runtime.getRuntime().exec(tilesCommand);
         pr2.waitFor();

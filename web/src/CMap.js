@@ -1,13 +1,14 @@
 import React from 'react';
 import Cesium from "cesium";
-import {DrawButton, ClearButton} from "./Buttons";
+import {DrawButton, ClearButton,DownloadButton} from "./component/Buttons";
+import GlobeTracker from "./utils/GlobeTracker";
 
 
 class Viewer extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            viewer: null
+            tracker: null
         }
     }
 
@@ -43,14 +44,14 @@ class Viewer extends React.Component {
             }
         });
         viewer._cesiumWidget._creditContainer.style.display = "none";
-        this.setState({viewer: viewer});
+        this.setState({tracker: new GlobeTracker(viewer)});
     }
 
     render() {
-
         return <div id="btnGroup">
-            <DrawButton viewer={this.state.viewer}/>
-            <ClearButton viewer={this.state.viewer}/>
+            <DrawButton  tracker={this.state.tracker}/>
+            <DownloadButton tracker={this.state.tracker}/>
+            <ClearButton  tracker={this.state.tracker}/>
         </div>;
     }
 }

@@ -30,6 +30,7 @@ GlobeRectangleDrawer.prototype = {
     toolBarIndex: null,
     layerId: "globeEntityDrawerLayer",
     codes: [],
+    imgInfo:null,
     init: function (viewer) {
         var _this = this;
         _this.viewer = viewer;
@@ -58,73 +59,78 @@ GlobeRectangleDrawer.prototype = {
     },
     startDrawRectangle: function (okHandler, cancelHandler) {
         var _this = this;
-        _this.okHandler = okHandler;
-        _this.cancelHandler = cancelHandler;
 
-        _this.positions = [];
-        var floatingPoint = null;
-        _this.drawHandler = new Cesium.ScreenSpaceEventHandler(_this.canvas);
+        return new Promise(resolve => {
+            _this.okHandler = okHandler;
+            _this.cancelHandler = cancelHandler;
 
-        _this.drawHandler.setInputAction(function (event) {
-            var position = event.position;
-            if (!Cesium.defined(position)) {
-                return;
-            }
-            var ray = _this.camera.getPickRay(position);
-            if (!Cesium.defined(ray)) {
-                return;
-            }
-            var cartesian = _this.scene.globe.pick(ray, _this.scene);
-            if (!Cesium.defined(cartesian)) {
-                return;
-            }
-            var num = _this.positions.length;
-            if (num === 0) {
-                _this.positions.push(cartesian);
-                floatingPoint = _this._createPoint(cartesian, -1);
-                _this._showRegion2Map();
-            }
-            _this.positions.push(cartesian);
-            var oid = _this.positions.length - 2;
-            _this._createPoint(cartesian, oid);
-            if (num > 1) {
-                _this.positions.pop();
-                _this.viewer.entities.remove(floatingPoint);
-                _this.tooltip.setVisible(false);
-                if (_this.drawHandler) {
-                    _this.drawHandler.destroy();
-                    _this.drawHandler = null;
+            _this.positions = [];
+            var floatingPoint = null;
+            _this.drawHandler = new Cesium.ScreenSpaceEventHandler(_this.canvas);
+            _this.drawHandler.setInputAction(function (event) {
+                var position = event.position;
+                if (!Cesium.defined(position)) {
+                    return;
                 }
-                _this._computeRectangle();
-                // _this._computeGrid(Cesium.Cartesian3.fromDegrees(-79, 0), Cesium.Cartesian3.fromDegrees(-34, -52));
-            }
+                var ray = _this.camera.getPickRay(position);
+                if (!Cesium.defined(ray)) {
+                    return;
+                }
+                var cartesian = _this.scene.globe.pick(ray, _this.scene);
+                if (!Cesium.defined(cartesian)) {
+                    return;
+                }
+                var num = _this.positions.length;
+                if (num === 0) {
+                    _this.positions.push(cartesian);
+                    floatingPoint = _this._createPoint(cartesian, -1);
+                    _this._showRegion2Map();
+                }
+                _this.positions.push(cartesian);
+                var oid = _this.positions.length - 2;
+                _this._createPoint(cartesian, oid);
+                if (num > 1) {
+                    _this.positions.pop();
+                    _this.viewer.entities.remove(floatingPoint);
+                    _this.tooltip.setVisible(false);
+                    if (_this.drawHandler) {
+                        _this.drawHandler.destroy();
+                        _this.drawHandler = null;
+                    }
+                    _this._computeRectangle();
+                    resolve(true);
+                    // _this._computeGrid(Cesium.Cartesian3.fromDegrees(-79, 0), Cesium.Cartesian3.fromDegrees(-34, -52));
+                }
 
 
-        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+            }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-        _this.drawHandler.setInputAction(function (event) {
-            var position = event.endPosition;
-            if (!Cesium.defined(position)) {
-                return;
-            }
-            if (_this.positions.length < 1) {
-                _this.tooltip.showAt(position, "<p>选择起点</p>");
-                return;
-            }
-            _this.tooltip.showAt(position, "<p>选择终点</p>");
+            _this.drawHandler.setInputAction(function (event) {
+                var position = event.endPosition;
+                if (!Cesium.defined(position)) {
+                    return;
+                }
+                if (_this.positions.length < 1) {
+                    _this.tooltip.showAt(position, "<p>选择起点</p>");
+                    return;
+                }
+                _this.tooltip.showAt(position, "<p>选择终点</p>");
 
-            var ray = _this.camera.getPickRay(position);
-            if (!Cesium.defined(ray)) {
-                return;
-            }
-            var cartesian = _this.scene.globe.pick(ray, _this.scene);
-            if (!Cesium.defined(cartesian)) {
-                return;
-            }
-            floatingPoint.position.setValue(cartesian);
-            _this.positions.pop();
-            _this.positions.push(cartesian);
-        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+                var ray = _this.camera.getPickRay(position);
+                if (!Cesium.defined(ray)) {
+                    return;
+                }
+                var cartesian = _this.scene.globe.pick(ray, _this.scene);
+                if (!Cesium.defined(cartesian)) {
+                    return;
+                }
+                floatingPoint.position.setValue(cartesian);
+                _this.positions.pop();
+                _this.positions.push(cartesian);
+            }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+        });
+
+
     },
     _createPoint: function (cartesian, oid) {
         var _this = this;
@@ -338,23 +344,36 @@ GlobeRectangleDrawer.prototype = {
         _this.codes = _this.gridUtils.getCodesFromPoints([p1_longitude, p1_latitude], [p2_longitude, p2_latitude], 6);
 
         console.log(_this.codes);
-        _this._getPath();
+        //_this.getPath();
 
         _this._getPosition();
     },
-    _getPath: function () {
+    getPath: function (tileLevel) {
         let _this = this;
-        axios.post('/code', _this.codes).then(({data}) => {
+        /*  axios.post('/code', {codes: _this.codes, tileLevel: tileLevel}).then(({data}) => {
+              console.log(data);
+              /!*if (data !== null && data !== undefined) {
+                  let terrainProvider = new Cesium.CesiumTerrainProvider({
+                      url: "/terrain_tiles"
+                  });
+                  _this.viewer.terrainProvider = terrainProvider;
+              }*!/
+          });*/
+        axios({
+            method: 'post',
+            url: '/code',
+            data: {codes: _this.codes, tileLevel: tileLevel},
+            timeout: 999990,
+        }).then(({data}) => {
             console.log(data);
+            _this.imgInfo = data;
             if (data !== null && data !== undefined) {
                 let terrainProvider = new Cesium.CesiumTerrainProvider({
                     url: "/terrain_tiles"
                 });
                 _this.viewer.terrainProvider = terrainProvider;
             }
-        });
-
-
+        })
     },
     _getLatArrayFromLevel: function (level) {
         let latArray = [];
