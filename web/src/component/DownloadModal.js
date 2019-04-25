@@ -4,16 +4,14 @@ import axios from "axios";
 
 
 class DownloadModal extends React.Component {
-    handleClick(){
-        axios({
-            method: 'post',
-            url: '/download',
-            data: this,
-        }).then(({data})=>{
+    handleClick() {
+        axios.get('/downloadSourceImg', {
+            params: {fileName: this}
+        }).then(({data}) => {
             if (data === "error") {
                 window.alert("文件下载出错，请检查服务器端");
             }
-        });
+        })
     }
 
     render() {

@@ -64,7 +64,7 @@ class DownloadButton extends React.Component {
         let modalClose = () => this.setState({modalShow: false});
         return (
             <>
-                <Button id="downloadBtn" variant="light" onClick={this.handleClick.bind(this)}>下载区域数据</Button>
+                <Button id="downloadBtn" variant="light" onClick={this.handleClick.bind(this)}>下载原始数据</Button>
                 <DownloadModal show={this.state.modalShow} onHide={modalClose} fileinfo={this.state.fileInfo}
                                />
             </>
@@ -72,4 +72,14 @@ class DownloadButton extends React.Component {
     }
 }
 
-export {DrawButton, ClearButton, DownloadButton}
+class DownClipImgButton extends React.Component {
+
+    handleClick() {
+        this.props.tracker.getClipImg();
+    }
+    render() {
+        return <Button id="downClipImgBtn" variant="secondary" onClick={this.handleClick.bind(this)}>下载选中数据</Button>
+    }
+}
+
+export {DrawButton, ClearButton, DownloadButton,DownClipImgButton}

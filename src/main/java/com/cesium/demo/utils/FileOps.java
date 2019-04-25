@@ -27,34 +27,39 @@ public class FileOps {
         out.close();
     }
 
-    public static void copyDir(String sourcePath, String newPath) throws IOException {
+    static void copyDir(String sourcePath, String newPath) throws IOException {
         File file = new File(sourcePath);
         String[] filePath = file.list();
 
         if (!(new File(newPath)).exists()) {
             (new File(newPath)).mkdir();
         }
+        if (filePath != null) {
+            for (String s : filePath) {
+                if ((new File(sourcePath + File.separator + s)).isDirectory()) {
+                    copyDir(sourcePath + File.separator + s,
+                            newPath + File.separator + s);
+                }
 
-        for (int i = 0; i < filePath.length; i++) {
-            if ((new File(sourcePath + File.separator + filePath[i])).isDirectory()) {
-                copyDir(sourcePath + File.separator + filePath[i],
-                        newPath + File.separator + filePath[i]);
+                if (new File(sourcePath + File.separator + s).isFile()) {
+                    copyFile(sourcePath + File.separator + s, newPath + File.separator + s);
+                }
+
             }
-
-            if (new File(sourcePath + File.separator + filePath[i]).isFile()) {
-                copyFile(sourcePath + File.separator + filePath[i], newPath + File.separator + filePath[i]);
-            }
-
         }
+
     }
 
-    public static void deleteFiles(String path) {
+    static void deleteFiles(String path) {
         File f = new File(path);
         if (f.isDirectory()) {
             String[] list = f.list();
-            for (int i = 0; i < list.length; i++) {
-                deleteFiles(path + "//" + list[i]);
+            if (list != null) {
+                for (String s : list) {
+                    deleteFiles(path + "//" + s);
+                }
             }
+
         }
         f.delete();
     }

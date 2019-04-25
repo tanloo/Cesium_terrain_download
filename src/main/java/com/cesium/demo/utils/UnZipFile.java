@@ -12,7 +12,7 @@ import java.util.zip.ZipInputStream;
  */
 public class UnZipFile {
 
-    public static Set<String> unZipFile(Set<String> zipPackages) throws Exception {
+    public static Set<String> unZipFile(Set<String> zipPackages) {
         System.out.println("-----开始提取img文件-------");
         Set<String> imgPaths = new HashSet<>();
         for (String zipPackage : zipPackages) {
@@ -26,26 +26,26 @@ public class UnZipFile {
                 outFile.mkdir();
             }
 
-            OutputStream out = new FileOutputStream(outPath);
-            FileInputStream fileInputStream = new FileInputStream(zipPackage);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-            ZipInputStream zin = new ZipInputStream(bufferedInputStream);
-            ZipEntry ze = null;
-            while ((ze = zin.getNextEntry()) != null) {
-                if (ze.getName().equals(fileToBeExtracted)) {
-                    byte[] buffer = new byte[9000];
-                    int len;
-                    while ((len = zin.read(buffer)) != -1) {
-                        out.write(buffer, 0, len);
+            try (OutputStream out = new FileOutputStream(outPath);
+                 FileInputStream fileInputStream = new FileInputStream(zipPackage);
+                 BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+                 ZipInputStream zin = new ZipInputStream(bufferedInputStream)) {
+                ZipEntry ze = null;
+                while ((ze = zin.getNextEntry()) != null) {
+                    if (ze.getName().equals(fileToBeExtracted)) {
+                        byte[] buffer = new byte[9000];
+                        int len;
+                        while ((len = zin.read(buffer)) != -1) {
+                            out.write(buffer, 0, len);
+                        }
+                        out.close();
+                        break;
                     }
-                    out.close();
-                    break;
                 }
+                imgPaths.add(outPath);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            fileInputStream.close();
-            bufferedInputStream.close();
-            zin.close();
-            imgPaths.add(outPath);
         }
         return imgPaths;
     }

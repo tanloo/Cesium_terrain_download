@@ -1,6 +1,6 @@
 import React from 'react';
 import Cesium from "cesium";
-import {DrawButton, ClearButton,DownloadButton} from "./component/Buttons";
+import {DrawButton, ClearButton, DownloadButton,DownClipImgButton} from "./component/Buttons";
 import GlobeTracker from "./utils/GlobeTracker";
 
 
@@ -49,9 +49,10 @@ class Viewer extends React.Component {
 
     render() {
         return <div id="btnGroup">
-            <DrawButton  tracker={this.state.tracker}/>
+            <DrawButton tracker={this.state.tracker}/>
+            <DownClipImgButton tracker={this.state.tracker}/>
             <DownloadButton tracker={this.state.tracker}/>
-            <ClearButton  tracker={this.state.tracker}/>
+            <ClearButton tracker={this.state.tracker}/>
         </div>;
     }
 }

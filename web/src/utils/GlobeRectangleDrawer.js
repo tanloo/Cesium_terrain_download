@@ -30,7 +30,7 @@ GlobeRectangleDrawer.prototype = {
     toolBarIndex: null,
     layerId: "globeEntityDrawerLayer",
     codes: [],
-    imgInfo:null,
+    imgInfo: null,
     init: function (viewer) {
         var _this = this;
         _this.viewer = viewer;
@@ -186,6 +186,32 @@ GlobeRectangleDrawer.prototype = {
         let p2_cartographic = _this.ellipsoid.cartesianToCartographic(p2);
         let p2_latitude = Cesium.Math.toDegrees(p2_cartographic.latitude);
         let p2_longitude = Cesium.Math.toDegrees(p2_cartographic.longitude);
+
+
+        let halfLon = (p1_longitude + p2_longitude) / 2;
+        let halfLat = (p1_latitude + p2_latitude) / 2;
+        let q = [];
+        q.push([p1_longitude, p1_latitude, halfLon, halfLat]);
+        q.push([p2_longitude, p1_latitude, halfLon, halfLat]);
+        q.push([p1_longitude, p2_latitude, halfLon, halfLat]);
+        q.push([p2_longitude, p2_latitude, halfLon, halfLat]);
+        for (let i = 0; i < q.length; i++) {
+            let cartesianArray = Cesium.Cartesian3.fromDegreesArray(q[i]);
+            let bData = {
+                name: 'Grid' + i,
+                rectangle: {
+                    coordinates: Cesium.Rectangle.fromCartesianArray(cartesianArray),
+                    outlineColor: Cesium.Color.RED,
+                    fill: false,
+                    outline: true,
+                    outlineWidth: 1,
+                },
+                layerId: 'Grid' + i
+            };
+            _this.viewer.entities.add(bData);
+        }
+
+
         //判断是否跨南北半球
         if ((p1_latitude > 0 && p2_latitude < 0) || (p1_latitude < 0 && p2_latitude > 0)) {
             _this._divideL(p1, Cesium.Cartesian3.fromDegrees(p2_longitude, 0), p1_longitude, p2_longitude, p1_latitude, 0);
@@ -346,7 +372,7 @@ GlobeRectangleDrawer.prototype = {
         console.log(_this.codes);
         //_this.getPath();
 
-        _this._getPosition();
+        //_this._getPosition();
     },
     getPath: function (tileLevel) {
         let _this = this;
@@ -401,7 +427,7 @@ GlobeRectangleDrawer.prototype = {
             },
             layerId: _this.layerId
         };
-        _this.viewer.entities.add(bData);
+        //_this.viewer.entities.add(bData);
 
         /*  let center_cartesian = Cesium.Cartographic.toCartesian(Cesium.Rectangle.center(Cesium.Rectangle.fromCartesianArray(cartesianArray)));
           let center_cartographic = _this.ellipsoid.cartesianToCartographic(center_cartesian);
@@ -521,6 +547,26 @@ GlobeRectangleDrawer.prototype = {
             entity.label.text = '(' + longitudeString + ', ' + latitudeString + "," + height + ')';
         }, Cesium.ScreenSpaceEventType.WHEEL);
     },
+    getSelectedRect: function () {
+        let _this = this;
+        let selectedEntity = _this.viewer.selectedEntity;
+        let rect = selectedEntity.rectangle.coordinates.getValue();
+        let west = Cesium.Math.toDegrees(rect.west);
+        let north = Cesium.Math.toDegrees(rect.north);
+        let south = Cesium.Math.toDegrees(rect.south);
+        let east = Cesium.Math.toDegrees(rect.east);
+        let [xMin, xMax] = [Math.min(west, east), Math.max(west, east)];
+        let [yMin, yMax] = [Math.min(north, south), Math.max(north, south)];
+        let coordsParam = [xMin, yMin, xMax, yMax];
+        axios.get('/downloadClipImg', {
+            params: {xMin, yMin, xMax, yMax}
+        }).then(({data})=>{
+            if (data === "success") {
+                window.alert("数据下载成功");
+            }
+        })
+    },
+
     CLASS_NAME: "GlobeRectangleDrawer"
 };
 

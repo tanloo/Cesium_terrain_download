@@ -41,7 +41,7 @@ public class ImgOps {
         }
     }
 
-    public static void img2terrain(String imgPath ,Integer tileLevel) throws Exception {
+    public static void img2terrain(String imgPath, Integer tileLevel) throws Exception {
         URL url = ClassUtils.getDefaultClassLoader().getResource("static/gdal2srtmtiles.py");
         String pyPath = new File(url.getPath()).getAbsolutePath();
         url = ClassUtils.getDefaultClassLoader().getResource("static");
@@ -84,7 +84,8 @@ public class ImgOps {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            new File(imgPath).delete();
+            //不删除合并的影像
+            // new File(imgPath).delete();
         } else {
             System.out.println("-------terrain生成失败-------");
         }

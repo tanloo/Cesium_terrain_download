@@ -47,6 +47,9 @@ GlobeTracker.prototype = {
     getImgInfo: function () {
         return this.rectDrawer.imgInfo;
     },
+    getClipImg:function(){
+        this.rectDrawer.getSelectedRect();
+    },
     CLASS_NAME: "GlobeTracker"
 };
 
