@@ -1,51 +1,39 @@
-import React from "react";
+import React, {useState} from "react";
 import {Button} from 'react-bootstrap';
 import TileLevelModal from "./TileLevelModal";
 import DownloadModal from "./DownloadModal";
 
+function DrawButton(props) {
+    const [modalShow, setModalShow] = useState(false);
 
-class DrawButton extends React.Component {
-    constructor(...args) {
-        super(...args);
-        this.state = {modalShow: false};
-    }
-
-    async handleClick() {
-        if (await this.props.tracker.trackRectangle()) {
-            this.setState({modalShow: true});
+    async function handleClick() {
+        if (await props.tracker.trackRectangle()) {
+            setModalShow(true);
         }
     }
 
-    render() {
-        let modalClose = () => this.setState({modalShow: false});
-        return (
-            <>
-                <Button id="drawRectBtn" variant="info" onClick={this.handleClick.bind(this)}>DrawRect</Button>
-                <TileLevelModal show={this.state.modalShow} onHide={modalClose} tracker={this.props.tracker}/>
-            </>
-        )
-    }
+    return (
+        <>
+            <Button id="drawRectBtn" variant="info" onClick={handleClick}>DrawRect</Button>
+            <TileLevelModal show={modalShow} onHide={() => setModalShow(false)} tracker={props.tracker}/>
+        </>
+    )
+
 }
 
-class ClearButton extends React.Component {
-
-    handleClick() {
-        this.props.tracker.clear();
-    }
-
-    render() {
-        return <Button id="clearBtn" variant="danger" onClick={this.handleClick.bind(this)}>ClearAll</Button>
-    }
+function ClearButton(props) {
+    const handleClick = () => {
+        props.tracker.clear();
+    };
+    return <Button id="clearBtn" variant="danger" onClick={handleClick}>ClearAll</Button>;
 }
 
-class DownloadButton extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {modalShow: false, fileInfo: null};
-    }
+function DownloadButton(props) {
+    const [modalShow, setModalShow] = useState(false);
+    const [fileInfo, setFileInfo] = useState(null);
 
-    handleClick() {
-        let data = this.props.tracker.getImgInfo();
+    const handleClick = () => {
+        let data = props.tracker.getImgInfo();
 
         if (data === null) {
             window.alert("需要先选择存在数据的区域！");
@@ -57,29 +45,25 @@ class DownloadButton extends React.Component {
             let fileName = data[item].path.split("\\")[data[item].path.split("\\").length - 1];
             arr.push({id: data[item].id, lon: lon, lat: lat, fileName: fileName});
         }
-        this.setState({modalShow: true, fileInfo: arr});
-    }
+        setModalShow(true);
+        setFileInfo(arr);
+    };
 
-    render() {
-        let modalClose = () => this.setState({modalShow: false});
-        return (
-            <>
-                <Button id="downloadBtn" variant="light" onClick={this.handleClick.bind(this)}>下载原始数据</Button>
-                <DownloadModal show={this.state.modalShow} onHide={modalClose} fileinfo={this.state.fileInfo}
-                               />
-            </>
-        )
-    }
+    return (
+        <>
+            <Button id="downloadBtn" variant="light" onClick={handleClick}>下载原始数据</Button>
+            <DownloadModal show={modalShow} onHide={() => setModalShow(false)} fileinfo={fileInfo}
+            />
+        </>
+    )
 }
 
-class DownClipImgButton extends React.Component {
-
-    handleClick() {
-        this.props.tracker.getClipImg();
-    }
-    render() {
-        return <Button id="downClipImgBtn" variant="secondary" onClick={this.handleClick.bind(this)}>下载选中数据</Button>
-    }
+function DownClipImgButton(props) {
+    const handleClick = () => {
+        props.tracker.getClipImg();
+    };
+    return <Button id="downClipImgBtn" variant="secondary" onClick={handleClick}>下载选中数据</Button>;
 }
 
-export {DrawButton, ClearButton, DownloadButton,DownClipImgButton}
+
+export {DrawButton, ClearButton, DownloadButton, DownClipImgButton}

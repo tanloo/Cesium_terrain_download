@@ -3,6 +3,6 @@ import ReactDOM from 'react-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './tooltip.css'
 import './main.css'
-import CMap from "./CMap";
+import Viewer from "./CMap";
 
-ReactDOM.render(<CMap />, document.getElementById('root'));
+ReactDOM.render(<Viewer />, document.getElementById('root'));

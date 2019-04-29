@@ -97,9 +97,9 @@ GlobeRectangleDrawer.prototype = {
                         _this.drawHandler.destroy();
                         _this.drawHandler = null;
                     }
-                    _this._computeRectangle();
+                    _this._computeCode();
+                    //_this._computeRectangle();
                     resolve(true);
-                    // _this._computeGrid(Cesium.Cartesian3.fromDegrees(-79, 0), Cesium.Cartesian3.fromDegrees(-34, -52));
                 }
 
 
@@ -175,6 +175,16 @@ GlobeRectangleDrawer.prototype = {
 
         _this.entity = _this.viewer.entities.add(bData);
         _this.entity.layerId = _this.layerId;
+    },
+    _computeCode: function () {
+        let _this = this;
+        let [p1, p2] = [this.positions[0], this.positions[1]];
+        let p1_cartographic = _this.ellipsoid.cartesianToCartographic(p1);
+        let [p1_longitude, p1_latitude] = [Cesium.Math.toDegrees(p1_cartographic.longitude), Cesium.Math.toDegrees(p1_cartographic.latitude)];
+        let p2_cartographic = _this.ellipsoid.cartesianToCartographic(p2);
+        let [p2_longitude, p2_latitude] = [Cesium.Math.toDegrees(p2_cartographic.longitude), Cesium.Math.toDegrees(p2_cartographic.latitude)];
+        _this.codes = _this.gridUtils.getCodesFromPoints([p1_longitude, p1_latitude], [p2_longitude, p2_latitude], 6);
+        console.log(_this.codes);
     },
     _computeRectangle: function () {
         let _this = this;
@@ -367,9 +377,6 @@ GlobeRectangleDrawer.prototype = {
                 _this._addGirdRect(degreeArray, i, j);
             }
         }
-        _this.codes = _this.gridUtils.getCodesFromPoints([p1_longitude, p1_latitude], [p2_longitude, p2_latitude], 6);
-
-        console.log(_this.codes);
         //_this.getPath();
 
         //_this._getPosition();
@@ -427,7 +434,7 @@ GlobeRectangleDrawer.prototype = {
             },
             layerId: _this.layerId
         };
-        //_this.viewer.entities.add(bData);
+        _this.viewer.entities.add(bData);
 
         /*  let center_cartesian = Cesium.Cartographic.toCartesian(Cesium.Rectangle.center(Cesium.Rectangle.fromCartesianArray(cartesianArray)));
           let center_cartographic = _this.ellipsoid.cartesianToCartographic(center_cartesian);
@@ -551,16 +558,19 @@ GlobeRectangleDrawer.prototype = {
         let _this = this;
         let selectedEntity = _this.viewer.selectedEntity;
         let rect = selectedEntity.rectangle.coordinates.getValue();
+        if (rect === undefined) {
+            window.alert("未选择范围！");
+            return;
+        }
         let west = Cesium.Math.toDegrees(rect.west);
         let north = Cesium.Math.toDegrees(rect.north);
         let south = Cesium.Math.toDegrees(rect.south);
         let east = Cesium.Math.toDegrees(rect.east);
         let [xMin, xMax] = [Math.min(west, east), Math.max(west, east)];
         let [yMin, yMax] = [Math.min(north, south), Math.max(north, south)];
-        let coordsParam = [xMin, yMin, xMax, yMax];
         axios.get('/downloadClipImg', {
             params: {xMin, yMin, xMax, yMax}
-        }).then(({data})=>{
+        }).then(({data}) => {
             if (data === "success") {
                 window.alert("数据下载成功");
             }
