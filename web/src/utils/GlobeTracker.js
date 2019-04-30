@@ -42,7 +42,7 @@ GlobeTracker.prototype = {
     },
     getTile: function (tileLevel) {
         let _this = this;
-        //_this.rectDrawer.getPath(tileLevel);
+        _this.rectDrawer.getPath(tileLevel);
     },
     getImgInfo: function () {
         return this.rectDrawer.imgInfo;

@@ -46,6 +46,8 @@
     "react-bootstrap": "^1.0.0-beta.8",
     "react-dev-utils": "^7.0.3",
     "react-dom": "^16.8.4",
+    "react-redux": "^7.0.3",
+    "redux": "^4.0.1",
     "resolve": "1.10.0",
     "sass-loader": "7.1.0",
     "terser-webpack-plugin": "1.2.2",

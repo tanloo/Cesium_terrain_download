@@ -1,16 +1,17 @@
 import React, {useState} from 'react';
-import {DrawButton, ClearButton, DownloadButton, DownClipImgButton} from "./component/Buttons";
+import {DrawBtn, ClearBtn, DownloadBtn, DownClipImgBtn} from "./components/Buttons";
 import Tracker from './modules/cesiumOps';
+import {ButtonGroup} from 'react-bootstrap';
 
 function Viewer() {
     const [tracker] = useState(Tracker);
     return (
-        <div id="btnGroup">
-            <DrawButton tracker={tracker}/>
-            <DownClipImgButton tracker={tracker}/>
-            <DownloadButton tracker={tracker}/>
-            <ClearButton tracker={tracker}/>
-        </div>
+        <ButtonGroup id="btnGroup"  size="lg">
+            <DrawBtn tracker={tracker}/>
+            <DownClipImgBtn tracker={tracker}/>
+            <DownloadBtn tracker={tracker}/>
+            <ClearBtn tracker={tracker}/>
+        </ButtonGroup>
     );
 }
 
