@@ -32,4 +32,5 @@ viewer.entities.add({
 });
 viewer._cesiumWidget._creditContainer.style.display = "none";
 //export const TrackerContext = React.createContext(new GlobeTracker(viewer));
-export default new GlobeTracker(viewer);
+const Tracker = new GlobeTracker(viewer);
+export {viewer, Tracker};

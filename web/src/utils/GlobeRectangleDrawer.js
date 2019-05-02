@@ -57,15 +57,13 @@ GlobeRectangleDrawer.prototype = {
         _this._clearMarkers(_this.layerId);
         _this.tooltip.setVisible(false);
     },
-    startDrawRectangle: function (okHandler, cancelHandler) {
+    startDrawRectangle: function (isRedraw = false, okHandler, cancelHandler) {
         var _this = this;
-
         return new Promise(resolve => {
             _this.okHandler = okHandler;
             _this.cancelHandler = cancelHandler;
 
             _this.positions = [];
-            var floatingPoint = null;
             _this.drawHandler = new Cesium.ScreenSpaceEventHandler(_this.canvas);
             _this.drawHandler.setInputAction(function (event) {
                 var position = event.position;
@@ -83,23 +81,40 @@ GlobeRectangleDrawer.prototype = {
                 var num = _this.positions.length;
                 if (num === 0) {
                     _this.positions.push(cartesian);
-                    floatingPoint = _this._createPoint(cartesian, -1);
-                    _this._showRegion2Map();
+                    _this._showRegion2Map(isRedraw);
                 }
                 _this.positions.push(cartesian);
                 var oid = _this.positions.length - 2;
-                _this._createPoint(cartesian, oid);
+                //_this._createPoint(cartesian, oid);
                 if (num > 1) {
                     _this.positions.pop();
-                    _this.viewer.entities.remove(floatingPoint);
                     _this.tooltip.setVisible(false);
                     if (_this.drawHandler) {
                         _this.drawHandler.destroy();
                         _this.drawHandler = null;
                     }
-                    _this._computeCode();
+
+                    if (isRedraw) {
+                        let fullRect = _this.viewer.entities.getById('Full Rect').rectangle.coordinates.getValue();
+                        let insideRect = _this.viewer.entities.getById('Inside Rect').rectangle.coordinates.getValue();
+                        if (Cesium.Rectangle.contains(fullRect, Cesium.Rectangle.northeast(insideRect)) &&
+                            Cesium.Rectangle.contains(fullRect, Cesium.Rectangle.northwest(insideRect)) &&
+                            Cesium.Rectangle.contains(fullRect, Cesium.Rectangle.southeast(insideRect)) &&
+                            Cesium.Rectangle.contains(fullRect, Cesium.Rectangle.southwest(insideRect))) {
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+                    } else {
+                        _this._computeCode();
+                        if (_this.codes.length !== 0) {
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+
+                    }
                     //_this._computeRectangle();
-                    resolve(true);
                 }
 
 
@@ -124,7 +139,7 @@ GlobeRectangleDrawer.prototype = {
                 if (!Cesium.defined(cartesian)) {
                     return;
                 }
-                floatingPoint.position.setValue(cartesian);
+                //floatingPoint.position.setValue(cartesian);
                 _this.positions.pop();
                 _this.positions.push(cartesian);
             }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
@@ -132,22 +147,7 @@ GlobeRectangleDrawer.prototype = {
 
 
     },
-    _createPoint: function (cartesian, oid) {
-        var _this = this;
-        var point = _this.viewer.entities.add({
-            position: cartesian,
-            billboard: {
-                image: _this.dragIconLight,
-                eyeOffset: new Cesium.ConstantProperty(new Cesium.Cartesian3(0, 0, -500)),
-                heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
-            }
-        });
-        point.oid = oid;
-        point.layerId = _this.layerId;
-        point.flag = "anchor";
-        return point;
-    },
-    _showRegion2Map: function () {
+    _showRegion2Map: function (isRedraw) {
         let _this = this;
         let dynamicPositions = new Cesium.CallbackProperty(function () {
             if (_this.positions.length > 1) {
@@ -172,8 +172,15 @@ GlobeRectangleDrawer.prototype = {
             bData.rectangle.closeTop = true;
             bData.rectangle.closeBottom = true;
         }
-
+        if (isRedraw) {
+            bData.id = 'Inside Rect';
+            bData.name = 'Inside Rect';
+        } else {
+            bData.id = 'Full Rect';
+            bData.name = 'Full Rect';
+        }
         _this.entity = _this.viewer.entities.add(bData);
+
         _this.entity.layerId = _this.layerId;
     },
     _computeCode: function () {
@@ -553,28 +560,6 @@ GlobeRectangleDrawer.prototype = {
             entity.label.show = true;
             entity.label.text = '(' + longitudeString + ', ' + latitudeString + "," + height + ')';
         }, Cesium.ScreenSpaceEventType.WHEEL);
-    },
-    getSelectedRect: function () {
-        let _this = this;
-        let selectedEntity = _this.viewer.selectedEntity;
-        let rect = selectedEntity.rectangle.coordinates.getValue();
-        if (rect === undefined) {
-            window.alert("未选择范围！");
-            return;
-        }
-        let west = Cesium.Math.toDegrees(rect.west);
-        let north = Cesium.Math.toDegrees(rect.north);
-        let south = Cesium.Math.toDegrees(rect.south);
-        let east = Cesium.Math.toDegrees(rect.east);
-        let [xMin, xMax] = [Math.min(west, east), Math.max(west, east)];
-        let [yMin, yMax] = [Math.min(north, south), Math.max(north, south)];
-        axios.get('/downloadClipImg', {
-            params: {xMin, yMin, xMax, yMax}
-        }).then(({data}) => {
-            if (data === "success") {
-                window.alert("数据下载成功");
-            }
-        })
     },
 
     CLASS_NAME: "GlobeRectangleDrawer"

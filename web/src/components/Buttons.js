@@ -3,6 +3,8 @@ import {Button} from 'react-bootstrap';
 import TileLevelModal from "./TileLevelModal";
 import DownloadModal from "./DownloadModal";
 import {connect} from "react-redux";
+import GlobeTracker from "../utils/GlobeTracker";
+import {viewer} from "../modules/cesiumOps";
 
 function DrawButton({tracker, setCompleted, drawIsCompleted}) {
     const [modalShow, setModalShow] = useState(false);
@@ -10,8 +12,8 @@ function DrawButton({tracker, setCompleted, drawIsCompleted}) {
     async function handleClick() {
         if (await tracker.trackRectangle()) {
             setModalShow(true);
+            setCompleted();
         }
-        setCompleted();
     }
 
     if (drawIsCompleted) {
@@ -19,7 +21,7 @@ function DrawButton({tracker, setCompleted, drawIsCompleted}) {
     }
     return (
         <>
-            <Button id="drawRectBtn" variant="info" onClick={handleClick}>DrawRect</Button>
+            <Button id="drawRectBtn" variant="info" onClick={handleClick}>选取范围</Button>
             <TileLevelModal show={modalShow} onHide={() => setModalShow(false)} tracker={tracker}/>
         </>
     )
@@ -42,14 +44,14 @@ function ClearButton({tracker, setUncompleted, drawIsCompleted}) {
     if (!drawIsCompleted) {
         return <></>
     }
-    return <Button id="clearBtn" variant="danger" onClick={handleClick}>ClearAll</Button>;
+    return <Button id="clearBtn" variant="danger" onClick={handleClick}>清除</Button>;
 }
 
 const mapDispatchToClearProps = (dispatch) => ({
     setUncompleted: () => {
         dispatch({
             type: 'clear'
-        })
+        });
     }
 });
 const ClearBtn = connect(({draw}) => ({drawIsCompleted: draw.drawIsCompleted}), mapDispatchToClearProps)(ClearButton);
@@ -88,17 +90,53 @@ function DownloadButton({tracker, drawIsCompleted}) {
 
 const DownloadBtn = connect(({draw}) => ({drawIsCompleted: draw.drawIsCompleted}))(DownloadButton);
 
-function DownClipImgButton({tracker, drawIsCompleted}) {
+function DownClipImgButton({tracker, redrawIsCompleted}) {
     const handleClick = () => {
         tracker.getClipImg();
     };
-    if (!drawIsCompleted) {
+    if (!redrawIsCompleted) {
         return <></>
     }
     return <Button id="downClipImgBtn" variant="secondary" onClick={handleClick}>下载选中数据</Button>;
 }
 
-const DownClipImgBtn = connect(({draw}) => ({drawIsCompleted: draw.drawIsCompleted}))(DownClipImgButton);
+const DownClipImgBtn = connect(({draw}) => ({redrawIsCompleted: draw.redrawIsCompleted}))(DownClipImgButton);
 
+function RedrawInsideRectButton({viewer, drawIsCompleted, redrawIsCompleted, setRedrawCompleted,setUnRedrawCompleted}) {
 
-export {DrawBtn, ClearBtn, DownloadBtn, DownClipImgBtn}
+    const handleClick = async () => {
+        const tracker = new GlobeTracker(viewer);
+        tracker.clearInsideRectangle();
+        if (await tracker.trackRectangle(true)) {
+            setRedrawCompleted();
+        } else {
+            window.alert("请在范围内选取！");
+            tracker.clearInsideRectangle();
+            setUnRedrawCompleted();
+        }
+
+    };
+    if (!drawIsCompleted && !redrawIsCompleted) {
+        return <></>;
+    }
+    return <Button variant="success" onClick={handleClick}>自定义裁剪</Button>;
+}
+
+const mapDispatchToRedrawProps = (dispatch) => ({
+    setRedrawCompleted: () => {
+        dispatch({
+            type: 'redraw'
+        });
+    },
+    setUnRedrawCompleted: () => {
+        dispatch({
+            type: 'unRedraw'
+        });
+    }
+});
+const RedrawInsideRectBtn = connect(({draw}) => ({
+    drawIsCompleted: draw.drawIsCompleted,
+    redrawIsCompleted: draw.redrawIsCompleted
+}), mapDispatchToRedrawProps)(RedrawInsideRectButton);
+
+export {DrawBtn, ClearBtn, DownloadBtn, DownClipImgBtn, RedrawInsideRectBtn}
