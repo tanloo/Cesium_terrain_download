@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
-import {DrawBtn, ClearBtn, DownloadBtn, DownClipImgBtn, RedrawInsideRectBtn} from "./components/Buttons";
-import {viewer,Tracker} from './modules/cesiumOps';
+import {DrawBtn, ClearBtn, DownloadBtn, DownClipImgBtn, RedrawInsideRectBtn, ResampleBtn} from "./components/Buttons";
+import {viewer, Tracker} from './modules/cesiumOps';
 import {ButtonGroup} from 'react-bootstrap';
 
 function Viewer() {
@@ -11,6 +11,7 @@ function Viewer() {
             <RedrawInsideRectBtn viewer={viewer}/>
             <DownClipImgBtn tracker={tracker}/>
             <DownloadBtn tracker={tracker}/>
+            <ResampleBtn/>
             <ClearBtn tracker={tracker}/>
         </ButtonGroup>
     );

@@ -25,6 +25,7 @@ public class ImgOps {
         pr.waitFor();
         int stat = pr.exitValue();
         if (stat == 0) {
+            pr.destroy();
             System.out.println("-----合并img文件完成-------");
             for (String singleImg : imgPaths) {
                 new File(singleImg).delete();
@@ -86,6 +87,8 @@ public class ImgOps {
             }
             //不删除合并的影像
             // new File(imgPath).delete();
+
+            pr2.destroy();
         } else {
             System.out.println("-------terrain生成失败-------");
         }

@@ -46,7 +46,7 @@ public class FileController {
         //调用gdalwarp库，直接命令行进行裁剪
         //gdalwarp -te xMin yMin xMax yMax -of GTiff sourceTifPath targetTifPath
         String[] coordsStr = {xMin, yMin, xMax, yMax, "-of", "GTiff", sourceImgPath, targetImgPath};
-        String[] clipCommand = {"gdalwarp", "-te"};
+        String[] clipCommand = {"gdalwarp", "-co", "TILED=YES", "-te"};
         clipCommand = ArrayUtils.addAll(clipCommand, coordsStr);
         System.out.println("-----开始裁剪img文件-------");
         Process pr = Runtime.getRuntime().exec(clipCommand);
@@ -60,9 +60,62 @@ public class FileController {
             } else {
                 throw new Exception("-----裁剪img文件完成，但未找到裁剪后文件！-------");
             }
+            pr.destroy();
         } else {
             throw new Exception("-----裁剪img文件失败-------");
         }
+        return "success";
+    }
+
+    @GetMapping("/downloadResampleImg")
+    public String downloadResampleImg(HttpServletResponse response, @RequestParam String method, @RequestParam String resolution) throws Exception {
+        String sourceImgPath = System.getProperty("user.dir") + "\\out.tif";
+        if (!new File(sourceImgPath).exists()) {
+            return "lost";
+        }
+        String targetImgPath = System.getProperty("user.dir") + "\\ResampleImg.tif";
+        if (new File(targetImgPath).exists()) {
+            new File(targetImgPath).delete();
+        }
+        //如果没设置重采样方法和分辨率则直接下载源影像
+        if ("none".equals(method) && "0.0002778".equals(resolution)) {
+            download(response, new File(sourceImgPath), "OutImg.tif");
+            return "success";
+        }
+        if ("none".equals(method)) {
+            method = "";
+        } else {
+            method = "-r " + method;
+        }
+        if ("0.0002778".equals(resolution)) {
+            resolution = "";
+        } else {
+            resolution = "-tr " + resolution + " " + resolution;
+        }
+        String[] resampleCommand = {"gdalwarp", "-co", "TILED=YES", method, "-dstalpha", resolution, sourceImgPath, targetImgPath};
+        for (String s : resampleCommand) {
+            System.out.print(s + " ");
+        }
+        System.out.println();
+        System.out.println("-----开始重采样img文件-------");
+        Process pr = Runtime.getRuntime().exec(resampleCommand);
+        pr.waitFor();
+
+        int stat = pr.exitValue();
+        if (stat == 0) {
+            pr.destroy();
+            System.out.println("-----重采样img文件完成-------");
+            File outImg = new File(targetImgPath);
+            if (outImg.exists()) {
+                download(response, outImg, "ResampleImg.tif");
+            } else {
+                throw new Exception("-----重采样img文件完成，但未找到重采样后文件！-------");
+            }
+        } else {
+            pr.destroy();
+            throw new Exception("-----重采样img文件失败-------");
+        }
+
         return "success";
     }
 

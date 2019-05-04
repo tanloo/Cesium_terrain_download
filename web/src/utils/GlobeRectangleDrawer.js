@@ -41,8 +41,6 @@ GlobeRectangleDrawer.prototype = {
         _this.ellipsoid = viewer.scene.globe.ellipsoid;
         _this.tooltip = new GlobeTooltip(viewer.container);
         _this.gridUtils = new GridUtils();
-        //_this._computeGrid(Cesium.Cartesian3.fromDegrees(0, 45), Cesium.Cartesian3.fromDegrees(180, 0));
-        //_this._computeGrid(Cesium.Cartesian3.fromDegrees(-91.96530365851015, 25.34859337209848), Cesium.Cartesian3.fromDegrees(-77.6934107113205, 16.69940417685254));
     },
     clear: function () {
         var _this = this;
@@ -84,8 +82,6 @@ GlobeRectangleDrawer.prototype = {
                     _this._showRegion2Map(isRedraw);
                 }
                 _this.positions.push(cartesian);
-                var oid = _this.positions.length - 2;
-                //_this._createPoint(cartesian, oid);
                 if (num > 1) {
                     _this.positions.pop();
                     _this.tooltip.setVisible(false);

@@ -4,15 +4,14 @@ import TileLevelModal from "./TileLevelModal";
 import DownloadModal from "./DownloadModal";
 import {connect} from "react-redux";
 import GlobeTracker from "../utils/GlobeTracker";
-import {viewer} from "../modules/cesiumOps";
+import ResampleModal from './ResampleModal';
 
-function DrawButton({tracker, setCompleted, drawIsCompleted}) {
+function DrawButton({tracker, drawIsCompleted}) {
     const [modalShow, setModalShow] = useState(false);
 
     async function handleClick() {
         if (await tracker.trackRectangle()) {
             setModalShow(true);
-            setCompleted();
         }
     }
 
@@ -27,14 +26,7 @@ function DrawButton({tracker, setCompleted, drawIsCompleted}) {
     )
 }
 
-const mapDispatchToDrawProps = (dispatch) => ({
-    setCompleted: () => {
-        dispatch({
-            type: 'draw'
-        })
-    }
-});
-const DrawBtn = connect(({draw}) => ({drawIsCompleted: draw.drawIsCompleted}), mapDispatchToDrawProps)(DrawButton);
+const DrawBtn = connect(({draw}) => ({drawIsCompleted: draw.drawIsCompleted}))(DrawButton);
 
 function ClearButton({tracker, setUncompleted, drawIsCompleted}) {
     const handleClick = () => {
@@ -82,8 +74,7 @@ function DownloadButton({tracker, drawIsCompleted}) {
     return (
         <>
             <Button id="downloadBtn" variant="light" onClick={handleClick}>下载原始数据</Button>
-            <DownloadModal show={modalShow} onHide={() => setModalShow(false)} fileinfo={fileInfo}
-            />
+            <DownloadModal show={modalShow} onHide={() => setModalShow(false)} fileInfo={fileInfo}/>
         </>
     )
 }
@@ -102,7 +93,7 @@ function DownClipImgButton({tracker, redrawIsCompleted}) {
 
 const DownClipImgBtn = connect(({draw}) => ({redrawIsCompleted: draw.redrawIsCompleted}))(DownClipImgButton);
 
-function RedrawInsideRectButton({viewer, drawIsCompleted, redrawIsCompleted, setRedrawCompleted,setUnRedrawCompleted}) {
+function RedrawInsideRectButton({viewer, drawIsCompleted, redrawIsCompleted, setRedrawCompleted, setUnRedrawCompleted}) {
 
     const handleClick = async () => {
         const tracker = new GlobeTracker(viewer);
@@ -139,4 +130,21 @@ const RedrawInsideRectBtn = connect(({draw}) => ({
     redrawIsCompleted: draw.redrawIsCompleted
 }), mapDispatchToRedrawProps)(RedrawInsideRectButton);
 
-export {DrawBtn, ClearBtn, DownloadBtn, DownClipImgBtn, RedrawInsideRectBtn}
+function ResampleButton({drawIsCompleted}) {
+    const [modalShow, setModalShow] = useState(false);
+    if (!drawIsCompleted) {
+        return <ResampleModal show={modalShow} onHide={() => setModalShow(false)}/>
+    }
+    return (
+        <>
+            <Button variant="warning" onClick={() => setModalShow(true)}>重采样源数据</Button>
+            <ResampleModal show={modalShow} onHide={() => setModalShow(false)}/>
+        </>
+    );
+}
+
+const ResampleBtn = connect(({draw}) => ({
+    drawIsCompleted: draw.drawIsCompleted
+}))(ResampleButton);
+
+export {DrawBtn, ClearBtn, DownloadBtn, DownClipImgBtn, RedrawInsideRectBtn, ResampleBtn}
