@@ -10,6 +10,7 @@ function DrawButton({tracker, drawIsCompleted}) {
     const [modalShow, setModalShow] = useState(false);
 
     async function handleClick() {
+        tracker.clear();
         if (await tracker.trackRectangle()) {
             setModalShow(true);
         }

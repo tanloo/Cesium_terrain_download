@@ -22,6 +22,77 @@ viewer.entities.add({
         material: Cesium.Color.GREEN,
     },
 });
+viewer.entities.add({
+    polyline: {
+        positions: Cesium.Cartesian3.fromDegreesArray([0, 45, 90, 45, 180, 45, -90, 45, 0, 45]),
+        width: 2,
+        material: Cesium.Color.RED,
+        arcType: Cesium.ArcType.RHUMB
+    },
+
+});
+viewer.entities.add({
+    polyline: {
+        positions: Cesium.Cartesian3.fromDegreesArray([0, 67.5, 90, 67.5, 180, 67.5, -90, 67.5, 0, 67.5]),
+        width: 2,
+        material: Cesium.Color.RED,
+        arcType: Cesium.ArcType.RHUMB
+    },
+
+});
+viewer.entities.add({
+    polyline: {
+        positions: Cesium.Cartesian3.fromDegreesArray([0, 78.75, 90, 78.75, 180, 78.75, -90, 78.75, 0, 78.75]),
+        width: 2,
+        material: Cesium.Color.RED,
+        arcType: Cesium.ArcType.RHUMB
+    },
+
+});
+viewer.entities.add({
+    polyline: {
+        positions: Cesium.Cartesian3.fromDegreesArray([0, 84.375, 90, 84.375, 180, 84.375, -90, 84.375, 0, 84.375]),
+        width: 2,
+        material: Cesium.Color.RED,
+        arcType: Cesium.ArcType.RHUMB
+    },
+
+});
+viewer.entities.add({
+    polyline: {
+        positions: Cesium.Cartesian3.fromDegreesArray([0, -45, 90, -45, 180, -45, -90, -45, 0, -45]),
+        width: 2,
+        material: Cesium.Color.RED,
+        arcType: Cesium.ArcType.RHUMB
+    },
+});
+viewer.entities.add({
+    polyline: {
+        positions: Cesium.Cartesian3.fromDegreesArray([0, -67.5, 90, -67.5, 180, -67.5, -90, -67.5, 0, -67.5]),
+        width: 2,
+        material: Cesium.Color.RED,
+        arcType: Cesium.ArcType.RHUMB
+    },
+
+});
+viewer.entities.add({
+    polyline: {
+        positions: Cesium.Cartesian3.fromDegreesArray([0, -78.75, 90, -78.75, 180, -78.75, -90, -78.75, 0, -78.75]),
+        width: 2,
+        material: Cesium.Color.RED,
+        arcType: Cesium.ArcType.RHUMB
+    },
+
+});
+viewer.entities.add({
+    polyline: {
+        positions: Cesium.Cartesian3.fromDegreesArray([0, -84.375, 90, -84.375, 180, -84.375, -90, -84.375, 0, -84.375]),
+        width: 2,
+        material: Cesium.Color.RED,
+        arcType: Cesium.ArcType.RHUMB
+    },
+
+});
 //子午线
 viewer.entities.add({
     polyline: {

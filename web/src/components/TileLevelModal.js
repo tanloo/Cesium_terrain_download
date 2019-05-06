@@ -5,7 +5,7 @@ import {connect} from "react-redux";
 
 function TileLevelModal(props) {
     const [alertShow, setAlertShow] = useState(false);
-    const [tileLevel, setTileLevel] = useState(8);
+    const [tileLevel, setTileLevel] = useState(0);
     const {tracker, setCompleted, ...rest} = props;
     const handleSelectChange = (event) => {
         if (event.target.value > 10) {

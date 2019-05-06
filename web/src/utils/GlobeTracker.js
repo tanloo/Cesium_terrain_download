@@ -36,7 +36,6 @@ GlobeTracker.prototype = {
             _this.rectDrawer = new GlobeRectangleDrawer(_this.viewer);
             _this.ctrArr.push(_this.rectDrawer);
         }
-        //_this.clear();
 
         let res = await _this.rectDrawer.startDrawRectangle(isRedraw, okHandler, cancelHandler);
         return new Promise(resolve => {
@@ -45,7 +44,7 @@ GlobeTracker.prototype = {
     },
     getTile: function (tileLevel) {
         let _this = this;
-        //_this.rectDrawer.getPath(tileLevel);
+        _this.rectDrawer.getPath(tileLevel);
     },
     getImgInfo: function () {
         return this.rectDrawer.imgInfo;

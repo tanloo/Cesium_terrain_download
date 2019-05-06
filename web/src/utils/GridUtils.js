@@ -135,15 +135,15 @@ GridUtils.prototype = {
     SC2NsGes: function (point, level) {
         let k = this._SC2B(25600000, level);
         let j = this.SC2L(point[1], level);
-        let dR = this.Ges90Degree / this._Pow2(level+ 1 - k);
+        let dR = this.Ges90Degree / this._Pow2(level + 1 - k);
         let dLat = this.Ges90Degree / this._Pow2(level + 1 - k);
-        let dLon = this.Ges90Degree / this._Pow2(level+ 2 - k - Math.abs(j));
+        let dLon = this.Ges90Degree / this._Pow2(level + 2 - k - Math.abs(j));
 
         let NsCoord = [];
-        NsCoord[4] = this.SC2QuadCode(point[0],point[1]);
+        NsCoord[4] = this.SC2QuadCode(point[0], point[1]);
         NsCoord[3] = level;
         NsCoord[2] = Math.floor(((this.GesRadius - 25600000) / dR)) + 1;
-        NsCoord[1] = point[1] < 0 ? Math.floor((-(point[1]) / dLat)) + 1 :Math.floor(((point[1]) / dLat))  + 1;
+        NsCoord[1] = point[1] < 0 ? Math.floor((-(point[1]) / dLat)) + 1 : Math.floor(((point[1]) / dLat)) + 1;
 
         let temp = point[0];
         while (temp >= this.Ges90Degree) {
@@ -156,14 +156,14 @@ GridUtils.prototype = {
         return NsCoord;
     },
     getCodesFromPoints: function (point1, point2, level) {
-        let L = this.SC2L(point1[1], level);
+        let L = this.SC2L((point1[1] + point2[1]) / 2, level);
 
         let cellSize = this.GesCellSize(1, L, level);
 
-        let m1 = Math.ceil((point2[0] - point1[0]) / cellSize[0]);
-        let m2 = Math.floor((point2[1] - point1[1]) / cellSize[1]);
-        m1 = Math.abs(m1);
-        m2 = Math.abs(m2);
+        let m1 = Math.ceil(Math.abs(point2[0] - point1[0]) / cellSize[0]);
+        let m2 = Math.ceil(Math.abs(point2[1] - point1[1]) / cellSize[1]);
+       // m1 = Math.abs(m1);
+        //m2 = Math.abs(m2);
         let JWX = this.SC2NsGes(point1, level);
         let XYCode = Math.floor(this.SC2QuadCode(point1[0], point1[1]));
         let codes = [];
@@ -173,7 +173,19 @@ GridUtils.prototype = {
             }
         }
         return codes;
-    }
+    },
+    getLatArrayFromLevel: function (level) {
+        let latArray = [];
+        for (let i = 1; i < level + 1; i++) {
+            latArray.push(90 - 90 * (Math.pow(1 / 2, i)));
+        }
+
+        let length = latArray.length;
+        for (let i = 0; i < length; i++) {
+            latArray.push(-latArray[i]);
+        }
+        return latArray;
+    },
 };
 
 export default GridUtils;

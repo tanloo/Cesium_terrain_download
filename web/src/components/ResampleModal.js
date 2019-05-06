@@ -19,6 +19,7 @@ function ResampleModal(props) {
         );
     };
     const handleCancel = () => {
+
         rest.onHide();
     };
     const handleDownloadClick = () => {
@@ -33,7 +34,6 @@ function ResampleModal(props) {
     return (
         <Modal
             {...rest}
-
             aria-labelledby="contained-modal-title-vcenter"
             centered
         >
