@@ -27,7 +27,6 @@ GlobeRectangleDrawer.prototype = {
     outline: true,
     outlineWidth: 2,
     extrudedHeight: 0,
-    toolBarIndex: null,
     layerId: "globeEntityDrawerLayer",
     codes: [],
     imgInfo: null,
@@ -179,7 +178,7 @@ GlobeRectangleDrawer.prototype = {
     },
     _computeCode: function (p1_longitude, p1_latitude, p2_longitude, p2_latitude) {
         let _this = this;
-        _this.codes.push.apply(_this.codes, _this.gridUtils.getCodesFromPoints([p1_longitude, p1_latitude], [p2_longitude, p2_latitude], _this.level));
+        _this.codes.push.apply(_this.codes,  _this.gridUtils.getCodesFromPoints([p1_longitude, p1_latitude], [p2_longitude, p2_latitude], _this.level));
 
     },
     _computeRectangle: function () {
@@ -279,6 +278,7 @@ GlobeRectangleDrawer.prototype = {
             _this._computeCode(p1_longitude, latArray[last], p2_longitude, p2_latitude);
         }
     },
+    //TODO:选取的矩形框与实际加载影像文件有偏差
     getPath: function (tileLevel) {
         let _this = this;
         axios({
@@ -289,6 +289,22 @@ GlobeRectangleDrawer.prototype = {
         }).then(({data}) => {
             console.log(data);
             _this.imgInfo = data;
+            for(let item in data){
+                console.log(data[item].path);
+                let [lat, lon] = data[item].path.match(/\d+/g);
+                lat = Number(lat);
+                lon = Number(lon);
+                let bData = {
+                    rectangle: {
+                        coordinates: Cesium.Rectangle.fromDegrees(lon , lat , lon + 1, lat + 1),
+                        outlineColor: Cesium.Color.YELLOW,
+                        fill: false,
+                        outline: true,
+                        outlineWidth: 1,
+                    },
+                };
+                _this.entity = _this.viewer.entities.add(bData);
+            }
             if (data !== null && data !== undefined) {
                 let terrainProvider = new Cesium.CesiumTerrainProvider({
                     url: "/terrain_tiles"
@@ -296,12 +312,6 @@ GlobeRectangleDrawer.prototype = {
                 _this.viewer.terrainProvider = terrainProvider;
             }
         })
-    },
-    _isSimpleXYZ: function (p1, p2) {
-        if (p1.x === p2.x && p1.y === p2.y && p1.z === p2.z) {
-            return true;
-        }
-        return false;
     },
     _clearMarkers: function (layerName) {
         var _this = this;

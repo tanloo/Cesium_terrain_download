@@ -52,12 +52,8 @@ public class CodeController {
         try {
             Set<String> imgPaths = UnZipFile.unZipFile(zipPaths);
             String imgPath = "";
-            if (imgPaths.size() > 1) {
-                imgPath = ImgOps.mergeImg(imgPaths);
-                ImgOps.img2terrain(imgPath, codeParam.getTileLevel());
-            } else {
-                ImgOps.img2terrain(imgPaths.iterator().next(), codeParam.getTileLevel());
-            }
+            imgPath = ImgOps.mergeImg(imgPaths);
+            ImgOps.img2terrain(imgPath, codeParam.getTileLevel());
         } catch (Exception e) {
             e.printStackTrace();
         }

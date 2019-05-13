@@ -15,13 +15,14 @@ let viewer = new Cesium.Viewer('cesiumContainer', {
     selectedImageryProviderViewModel: imageryProviders[selectedImageryProviderIndex]
 });
 //赤道
-viewer.entities.add({
+/*viewer.entities.add({
     polyline: {
         positions: Cesium.Cartesian3.fromDegreesArray([0, 0, 90, 0, 180, 0, -90, 0, 0, 0]),
         width: 2,
         material: Cesium.Color.GREEN,
     },
 });
+//纬域
 viewer.entities.add({
     polyline: {
         positions: Cesium.Cartesian3.fromDegreesArray([0, 45, 90, 45, 180, 45, -90, 45, 0, 45]),
@@ -100,7 +101,7 @@ viewer.entities.add({
         width: 2,
         material: Cesium.Color.GREEN,
     }
-});
+});*/
 viewer._cesiumWidget._creditContainer.style.display = "none";
 //export const TrackerContext = React.createContext(new GlobeTracker(viewer));
 const Tracker = new GlobeTracker(viewer);

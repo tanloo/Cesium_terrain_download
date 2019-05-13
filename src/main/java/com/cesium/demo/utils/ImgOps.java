@@ -18,6 +18,10 @@ public class ImgOps {
         System.out.println("有" + str_imgPaths.length + "份数据");
         URL url = ClassUtils.getDefaultClassLoader().getResource("static/gdal_merge.py");
         String imgMerge_pyPath = new File(url.getPath()).getAbsolutePath();
+        String imgPath = System.getProperty("user.dir") + "\\out.tif";
+        if (new File(imgPath).exists()) {
+            new File(imgPath).delete();
+        }
         String[] temp = {"cmd", "/c", "python", imgMerge_pyPath};
         String[] mergeCommand = ArrayUtils.addAll(temp, str_imgPaths);
         System.out.println("-----开始合并img文件-------");
@@ -30,7 +34,6 @@ public class ImgOps {
             for (String singleImg : imgPaths) {
                 new File(singleImg).delete();
             }
-            String imgPath = System.getProperty("user.dir") + "\\out.tif";
             File outImg = new File(imgPath);
             if (outImg.exists()) {
                 return imgPath;

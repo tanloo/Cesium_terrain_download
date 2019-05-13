@@ -44,6 +44,36 @@ GridUtils.prototype = {
         return 0;
 
     },
+    _NsGes2B: function (gama, n) {
+        let n_12 = this._Pow2(n - 1);
+        let n_2 = n_12 << 1;
+        if (gama <= n_12) {
+            return 1;
+        } else if (gama <= n_2) {
+            return n - this._DownLog2(n_2 - gama);
+        } else {
+            return n + 1;
+        }
+    },
+    _NsGes2L: function (beta, k, n) {
+        let n_12 = this._Pow2(n - k);
+        let n_2 = n_12 << 1;
+        let mask = 1;
+        if (beta < 0) {
+            beta = -beta;
+            mask = -1;
+        } else if (beta <= n_12) {
+            return 1 * mask;
+        } else if (beta <= n_2) {
+            return (n + 1 - k - this._DownLog2(n_2 - beta)) * mask;
+        } else {
+            return (n - k + 2) * mask;
+        }
+
+    },
+    _QuadCode2Longitude: function (qc) {
+        return (qc & 0x3) * this.Ges90Degree;
+    },
     _Pow2: function (x) {
         if (x < 0) {
             return 0;
@@ -84,7 +114,6 @@ GridUtils.prototype = {
             XYCode = lon / this.Ges90Degree;
         }
         return Math.floor(lat > 0 ? XYCode : XYCode | 0X4);
-
     },
     _ZFilling: function (order0, order1, sl/*subdivision level*/) {
         let result = 0;
@@ -162,7 +191,7 @@ GridUtils.prototype = {
 
         let m1 = Math.ceil(Math.abs(point2[0] - point1[0]) / cellSize[0]);
         let m2 = Math.ceil(Math.abs(point2[1] - point1[1]) / cellSize[1]);
-       // m1 = Math.abs(m1);
+        // m1 = Math.abs(m1);
         //m2 = Math.abs(m2);
         let JWX = this.SC2NsGes(point1, level);
         let XYCode = Math.floor(this.SC2QuadCode(point1[0], point1[1]));
@@ -172,6 +201,8 @@ GridUtils.prototype = {
                 codes.push(this.DCSE2SDQGC(JWX[0] + i, JWX[1] + j, XYCode, level));
             }
         }
+        //let gCenter = this._NsGes2GesSC(JWX);
+        //let rect = [gCenter[0] - cellSize[0], gCenter[1] - cellSize[1], gCenter[0] + cellSize[0], gCenter[1] + cellSize[1]];
         return codes;
     },
     getLatArrayFromLevel: function (level) {
@@ -185,6 +216,29 @@ GridUtils.prototype = {
             latArray.push(-latArray[i]);
         }
         return latArray;
+    },
+    _NsGes2GesSC: function (nsGes) {
+        let k = this._NsGes2B(nsGes[2], nsGes[3]);
+        let j = this._NsGes2L(nsGes[1], k, nsGes[3]);
+        let gSize = [];
+        gSize.push(this.Ges90Degree / this._Pow2(nsGes[3] + 2 - k - Math.abs(j)));
+        gSize.push(this.Ges90Degree / this._Pow2(nsGes[3] + 1 - k));
+        gSize.push(this.GesRadius / this._Pow2(nsGes[3]));
+
+        let coordX = nsGes[0] - 1;
+        if (coordX[0] < 0) {
+            let k = this._NsGes2B(nsGes[2], nsGes[3]);
+            let j = this._NsGes2L(nsGes[1], k, nsGes[3]);
+            let count = ((j == (nsGes[3] + 2 - k)) ? 1 : 1 << (nsGes[3] + 2 - k - j));
+            coordX += count;
+        }
+        let coordY = nsGes[1] > 0 ? nsGes[1] - 1 : -nsGes[1] - 1;
+        let gCenter = [];
+        gCenter.push(this._QuadCode2Longitude(nsGes[4]) + (coordX + 0.5) * gSize[0]);
+        gCenter.push((nsGes[4] & 0x4) ? -(coordY + 0.5) * gSize[1] : (coordY + 0.5) * gSize[1]);
+        gCenter.push(this.GesRadius - (nsGes[2] - 0.5) * gSize[2]);
+        console.log("center:", gCenter);
+        return gCenter;
     },
 };
 
