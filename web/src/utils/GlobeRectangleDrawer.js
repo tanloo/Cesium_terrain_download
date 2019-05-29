@@ -153,7 +153,7 @@ GlobeRectangleDrawer.prototype = {
         let bData = {
             rectangle: {
                 coordinates: dynamicPositions,
-                outlineColor: Cesium.Color.RED,
+                outlineColor: Cesium.Color.YELLOW,
                 fill: false,
                 outline: true,
                 outlineWidth: 1,
@@ -166,6 +166,7 @@ GlobeRectangleDrawer.prototype = {
             bData.rectangle.closeBottom = true;
         }
         if (isRedraw) {
+            bData.rectangle.outlineColor = Cesium.Color.RED;
             bData.id = 'Inside Rect';
             bData.name = 'Inside Rect';
         } else {
@@ -178,7 +179,7 @@ GlobeRectangleDrawer.prototype = {
     },
     _computeCode: function (p1_longitude, p1_latitude, p2_longitude, p2_latitude) {
         let _this = this;
-        _this.codes.push.apply(_this.codes,  _this.gridUtils.getCodesFromPoints([p1_longitude, p1_latitude], [p2_longitude, p2_latitude], _this.level));
+        _this.codes.push.apply(_this.codes, _this.gridUtils.getCodesFromPoints([p1_longitude, p1_latitude], [p2_longitude, p2_latitude], _this.level));
 
     },
     _computeRectangle: function () {
@@ -193,7 +194,7 @@ GlobeRectangleDrawer.prototype = {
         let p2_cartographic = _this.ellipsoid.cartesianToCartographic(p2);
         let p2_latitude = Cesium.Math.toDegrees(p2_cartographic.latitude);
         let p2_longitude = Cesium.Math.toDegrees(p2_cartographic.longitude);
-
+        console.log([p1_longitude, p1_latitude, p2_longitude, p2_latitude]);
         //交换坐标点为p1低纬域值，p2高纬域值
         if ((p2_latitude > p1_latitude && p2_latitude >= 0 && p1_latitude >= 0) || (p2_latitude < p1_latitude && p2_latitude <= 0 && p1_latitude <= 0)) {
             let temp = p1;
@@ -289,15 +290,15 @@ GlobeRectangleDrawer.prototype = {
         }).then(({data}) => {
             console.log(data);
             _this.imgInfo = data;
-            for(let item in data){
+            for (let item in data) {
                 console.log(data[item].path);
                 let [lat, lon] = data[item].path.match(/\d+/g);
                 lat = Number(lat);
                 lon = Number(lon);
                 let bData = {
                     rectangle: {
-                        coordinates: Cesium.Rectangle.fromDegrees(lon , lat , lon + 1, lat + 1),
-                        outlineColor: Cesium.Color.YELLOW,
+                        coordinates: Cesium.Rectangle.fromDegrees(lon, lat, lon + 1, lat + 1),
+                        outlineColor: Cesium.Color.BLUE,
                         fill: false,
                         outline: true,
                         outlineWidth: 1,

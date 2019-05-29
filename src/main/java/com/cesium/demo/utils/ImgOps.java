@@ -82,15 +82,13 @@ public class ImgOps {
         int stat2 = pr2.exitValue();
         if (stat2 == 0) {
             System.out.println("-------terrain生成成功-------");
-            String s = "D:\\Administrator\\Desktop\\11ww\\terrain\\覆盖至生成tiles结果";
+            String s = System.getProperty("user.dir") + "\\terrain\\覆盖至生成tiles结果";
+            System.out.println(s);
             try {
                 FileOps.copyDir(s, tilePath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            //不删除合并的影像
-            // new File(imgPath).delete();
-
             pr2.destroy();
         } else {
             System.out.println("-------terrain生成失败-------");

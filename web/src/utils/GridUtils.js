@@ -229,7 +229,7 @@ GridUtils.prototype = {
         if (coordX[0] < 0) {
             let k = this._NsGes2B(nsGes[2], nsGes[3]);
             let j = this._NsGes2L(nsGes[1], k, nsGes[3]);
-            let count = ((j == (nsGes[3] + 2 - k)) ? 1 : 1 << (nsGes[3] + 2 - k - j));
+            let count = ((j === (nsGes[3] + 2 - k)) ? 1 : 1 << (nsGes[3] + 2 - k - j));
             coordX += count;
         }
         let coordY = nsGes[1] > 0 ? nsGes[1] - 1 : -nsGes[1] - 1;

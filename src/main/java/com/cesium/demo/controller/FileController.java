@@ -92,6 +92,7 @@ public class FileController {
         } else {
             resolution = "-tr " + resolution + " " + resolution;
         }
+        //gdalwarp -co TILED=YES -r resampling_method -dstalpha -tr xres yres sourceImgfile targetImgfile
         String[] resampleCommand = {"gdalwarp", "-co", "TILED=YES", method, "-dstalpha", resolution, sourceImgPath, targetImgPath};
         for (String s : resampleCommand) {
             System.out.print(s + " ");

@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author tanloo
@@ -38,11 +35,13 @@ public class CodeController {
         Set<String> zipPaths = new HashSet<>();
 
         for (Long id : codeParam.getCodes()) {
-            Code code = this.codeMapper.getOne(id);
-            if (code != null) {
-                if (new File(code.getPath()).exists()) {
-                    map.put(id, code);
-                    zipPaths.add(code.getPath());
+            List<Code> codes = this.codeMapper.getCodeInfo(id);
+            if (codes != null && codes.size() != 0) {
+                for (Code code : codes) {
+                    if (new File(code.getPath()).exists()) {
+                        map.put(id, code);
+                        zipPaths.add(code.getPath());
+                    }
                 }
             }
         }
