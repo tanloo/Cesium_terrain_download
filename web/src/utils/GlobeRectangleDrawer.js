@@ -110,7 +110,7 @@ GlobeRectangleDrawer.prototype = {
                             resolve(false);
                         }
                     }
-                    _this._getPosition();
+                    //_this._getPosition();
                 }
             }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
@@ -304,7 +304,7 @@ GlobeRectangleDrawer.prototype = {
                         outlineWidth: 1,
                     },
                 };
-                _this.entity = _this.viewer.entities.add(bData);
+                //_this.entity = _this.viewer.entities.add(bData);
             }
             if (data !== null && data !== undefined) {
                 let terrainProvider = new Cesium.CesiumTerrainProvider({

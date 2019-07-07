@@ -1,6 +1,8 @@
 import Cesium from "cesium";
 import GlobeTracker from "../utils/GlobeTracker";
 
+Cesium.Ion.defaultAccessToken =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjMDgxODdlMy04YjA1LTQxZDYtYjgwYi0wNGE4NjNiZWExMDkiLCJpZCI6NzExMywic2NvcGVzIjpbImFzciIsImdjIl0sImlhdCI6MTU0ODMwMTI4MX0.EiI79H37qhbkV9mkW0mcZpmJSUr9K_jNqglNGAUiCCY';
 let imageryProviders = new Cesium.createDefaultImageryProviderViewModels();
 let selectedImageryProviderIndex = 6;
 let viewer = new Cesium.Viewer('cesiumContainer', {

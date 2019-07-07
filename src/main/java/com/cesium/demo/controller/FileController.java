@@ -1,5 +1,6 @@
 package com.cesium.demo.controller;
 
+import com.cesium.demo.utils.StreamGobbler;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,6 +50,9 @@ public class FileController {
         String[] clipCommand = {"gdalwarp", "-co", "TILED=YES", "-te"};
         clipCommand = ArrayUtils.addAll(clipCommand, coordsStr);
         System.out.println("-----开始裁剪img文件-------");
+        for (String s : clipCommand) {
+            System.out.print(s + " ");
+        }
         Process pr = Runtime.getRuntime().exec(clipCommand);
         pr.waitFor();
         int stat = pr.exitValue();
@@ -82,29 +86,44 @@ public class FileController {
             download(response, new File(sourceImgPath), "OutImg.tif");
             return "success";
         }
+        String[] methods = new String[2];
         if ("none".equals(method)) {
-            method = "";
+            methods[0] = "";
+            methods[1] = "";
         } else {
-            method = "-r " + method;
+            methods[0] = "-r";
+            methods[1] = method;
         }
+        String[] resolutions = new String[3];
         if ("0.0002778".equals(resolution)) {
-            resolution = "";
+            resolutions[0] = "";
+            resolutions[1] = "";
+            resolutions[2] = "";
         } else {
-            resolution = "-tr " + resolution + " " + resolution;
+            resolutions[0] = "-tr";
+            resolutions[1] = resolution;
+            resolutions[2] = resolution;
         }
         //gdalwarp -co TILED=YES -r resampling_method -dstalpha -tr xres yres sourceImgfile targetImgfile
-        String[] resampleCommand = {"gdalwarp", "-co", "TILED=YES", method, "-dstalpha", resolution, sourceImgPath, targetImgPath};
+
+        String[] resampleCommand = ArrayUtils.addAll(new String[]{"cmd", "/c", "gdalwarp", "-co", "TILED=YES"}, methods);
+        resampleCommand = ArrayUtils.addAll(resampleCommand, resolutions);
+        resampleCommand = ArrayUtils.addAll(resampleCommand, new String[]{sourceImgPath, targetImgPath});
         for (String s : resampleCommand) {
             System.out.print(s + " ");
         }
         System.out.println();
         System.out.println("-----开始重采样img文件-------");
         Process pr = Runtime.getRuntime().exec(resampleCommand);
-        pr.waitFor();
+        StreamGobbler errorGobbler = new StreamGobbler(pr.getErrorStream(), "Error");
+        StreamGobbler outputGobbler = new StreamGobbler(pr.getInputStream(), "Output");
+        errorGobbler.start();
+        outputGobbler.start();
+        int stat = pr.waitFor();
 
-        int stat = pr.exitValue();
+        // int stat = pr.exitValue();
         if (stat == 0) {
-            pr.destroy();
+            //pr.destroy();
             System.out.println("-----重采样img文件完成-------");
             File outImg = new File(targetImgPath);
             if (outImg.exists()) {
@@ -113,8 +132,7 @@ public class FileController {
                 throw new Exception("-----重采样img文件完成，但未找到重采样后文件！-------");
             }
         } else {
-            pr.destroy();
-            throw new Exception("-----重采样img文件失败-------");
+            System.out.println("-------重采样img文件失败-------");
         }
 
         return "success";
